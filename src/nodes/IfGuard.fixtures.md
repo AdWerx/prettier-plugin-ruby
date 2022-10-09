@@ -1,0 +1,14 @@
+<!-- gen:mayoverwrite -->
+# IfGuard Formatting
+
+## Fails because no tests are written
+
+Before:
+```ruby
+foo
+```
+
+After:
+```ruby
+bar
+```
