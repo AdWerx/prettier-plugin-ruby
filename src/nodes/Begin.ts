@@ -4,8 +4,7 @@ import { NodePrinter } from "../";
 const { builders: b } = doc;
 
 const printBegin: NodePrinter<nodes.Begin> = (path, options, print) => {
-  const node = path.getValue();
-  return path.map(print, "statements");
+  return b.join(b.hardline, path.map(print, "statements"));
 };
 
 export default printBegin;

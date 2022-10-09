@@ -9,10 +9,7 @@ const printStr: NodePrinter<nodes.Str> = (path, options, print) => {
   const parent = path.getParentNode();
   // if we're the immediate child of an array and the array has a %w or %W modifier,
   // we do not need quotes
-  if (
-    options.enclosingArrayNodeWithModifier === parent &&
-    options.enclosingArrayNodeWithModifierBrackets?.[0]?.match(/w/i)
-  ) {
+  if (options.parentWithImplicitStringChildren === parent) {
     quote = "";
   }
   // lossy

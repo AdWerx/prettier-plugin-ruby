@@ -1,6 +1,12 @@
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
-import { NodePrinter } from "../";
+import {
+  NodePrinter,
+  withImplicitStringChildren,
+  withImplicitSymbolChildren,
+  withNoop,
+  Wrapper,
+} from "../";
 const { builders: b } = doc;
 
 // %i[ ]	Non-interpolated Array of symbols, separated by whitespace (after Ruby 2.0)
@@ -22,28 +28,29 @@ const printArray: NodePrinter<nodes.Array> = (path, options, print) => {
     ];
   }
 
+  let wrap: Wrapper = withNoop;
   // a string/symbol inside of %w, %i and the like should know they do not need
   // to quote themselves or prefix with ":"
-  if (brackets[0] !== "[") {
-    options.enclosingArrayNodeWithModifier = node;
-    options.enclosingArrayNodeWithModifierBrackets = brackets;
+  if (brackets[0].match(/^%i/i)) {
     delimiter = "";
+    wrap = withImplicitSymbolChildren;
+  }
+  if (brackets[0].match(/^%w/i)) {
+    delimiter = "";
+    wrap = withImplicitStringChildren;
   }
 
-  const doc = b.group([
-    brackets[0],
-    b.indent([
+  return wrap(options, { node: node }, () =>
+    b.group([
+      brackets[0],
+      b.indent([
+        b.softline,
+        b.join([delimiter, b.line], path.map(print, "elements")),
+      ]),
       b.softline,
-      b.join([delimiter, b.line], path.map(print, "elements")),
-    ]),
-    b.softline,
-    brackets[1],
-  ]);
-
-  delete options.enclosingArrayNodeWithModifier;
-  delete options.enclosingArrayNodeWithModifierBrackets;
-
-  return doc;
+      brackets[1],
+    ])
+  );
 };
 
 export default printArray;

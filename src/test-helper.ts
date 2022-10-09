@@ -27,8 +27,9 @@ type Token = {
   tokens?: Token[];
 };
 
-export const formatOptions = {
+export const formatOptions: prettier.Options = {
   parser: plugin.RUBY,
+  printWidth: 80,
   plugins: [plugin],
 };
 

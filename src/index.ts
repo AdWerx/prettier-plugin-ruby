@@ -4,14 +4,90 @@ import { AstPath, Doc, Parser, ParserOptions, Printer } from "prettier";
 export const RUBY = "ruby";
 export const DEFAULT_QUOTE = '"';
 
-export interface RubyParserOptions<T> extends ParserOptions<T> {
-  enclosingArrayNodeWithModifier?: T;
-  enclosingArrayNodeWithModifierBrackets?: [string, string];
+export interface RubyParserOptions extends ParserOptions<Node | null> {
+  parentWithImplicitSymbolChildren?: Node;
+  parentWithImplicitStringChildren?: Node;
 }
+
+// type ParserOptionsKey = keyof RubyParserOptions;
+
+// export const withContext = (
+//   options: RubyParserOptions,
+//   {
+//     changes,
+//   }: { changes: Partial<RubyParserOptions> },
+//   fn: () => Doc
+// ): Doc => {
+//   const originals: { [key: string]: unknown } = {};
+//   Object.keys(changes).forEach((key: string) => {
+//     originals[key] =
+//   });
+//   return fn();
+// };
+
+export type Context = {
+  node?: Node;
+};
+export interface Wrapper {
+  (options: RubyParserOptions, context: Context, fn: () => Doc): Doc;
+}
+
+export const withNoop = (
+  options: RubyParserOptions,
+  context: Context,
+  fn: () => Doc
+): Doc => {
+  return fn();
+};
+
+export const withImplicitStringChildren = (
+  options: RubyParserOptions,
+  context: Context,
+  fn: () => Doc
+): Doc => {
+  const original = options.parentWithImplicitStringChildren;
+  options.parentWithImplicitStringChildren = context.node;
+  const result = fn();
+  options.parentWithImplicitStringChildren = original;
+  return result;
+};
+
+export const withImplicitSymbolChildren = (
+  options: RubyParserOptions,
+  context: Context,
+  fn: () => Doc
+): Doc => {
+  const original = options.parentWithImplicitSymbolChildren;
+  options.parentWithImplicitSymbolChildren = context.node;
+  const result = fn();
+  options.parentWithImplicitSymbolChildren = original;
+  return result;
+};
+
+// export const withContext = (
+//   {
+//     options,
+//     changes,
+//   }: {
+//     options: RubyParserOptions;
+//     changes: Partial<RubyParserOptions>;
+//   },
+//   fn: () => Doc
+// ): Doc => {
+//   const originals: Partial<RubyParserOptions> = {};
+//   Object.keys(changes).forEach((key) => {
+//     (originals as any)[key] = (options as any)[key];
+//   });
+//   const result = fn();
+//   Object.keys(changes).forEach((key) => {
+//     (options as any)[key] = (originals as any)[key];
+//   });
+//   return result;
+// };
 
 export type NodePrinter<T> = (
   path: AstPath<T>,
-  options: RubyParserOptions<T | null>,
+  options: RubyParserOptions,
   print: (path: AstPath<Node | null>) => Doc
 ) => Doc;
 
@@ -60,7 +136,7 @@ export const parsers = {
 const rubyPrinter: Printer<Node | null> = {
   print(path, options, print) {
     const node = path.getValue();
-    // guard against nulls
+    // guard against nulls since we all those to be printed
     if (!node) return "";
 
     const type = node.constructor.name;
