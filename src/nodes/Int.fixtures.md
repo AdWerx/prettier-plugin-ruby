@@ -1,14 +1,29 @@
-<!-- gen:mayoverwrite -->
 # Int Formatting
 
-## Fails because no tests are written
+## Formats an integer
 
 Before:
+
 ```ruby
-foo
+1
 ```
 
 After:
+
 ```ruby
-bar
+1
+```
+
+## Formats a signed integer
+
+Before:
+
+```ruby
+-1
+```
+
+After:
+
+```ruby
+-1
 ```

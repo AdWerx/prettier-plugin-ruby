@@ -1,14 +1,50 @@
-<!-- gen:mayoverwrite -->
 # IndexAsgn Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+foo[ 1, 2 ] = 3
 ```
 
 After:
+
 ```ruby
-bar
+foo[1, 2] = 3
+```
+
+## Breaks the index brackets when necessary
+
+Before:
+
+```ruby
+foo[some_variable_name_that_is_used_as_an_index_in_this_example, another_long_name ] = "foo"
+```
+
+After:
+
+```ruby
+foo[
+  some_variable_name_that_is_used_as_an_index_in_this_example,
+  another_long_name
+] = "foo"
+```
+
+## Breaks the value when necessary
+
+Before:
+
+```ruby
+foo[some_variable_name_that_is_used_as_an_index_in_this_example, another_long_name ] = some_very_long_assignment_that_must_be_broken && cannot_fit_on_one_line_which_is_unfortunate
+```
+
+After:
+
+```ruby
+foo[
+  some_variable_name_that_is_used_as_an_index_in_this_example,
+  another_long_name
+] = some_very_long_assignment_that_must_be_broken &&
+  cannot_fit_on_one_line_which_is_unfortunate
 ```

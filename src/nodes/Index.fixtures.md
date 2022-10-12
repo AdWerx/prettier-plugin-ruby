@@ -1,14 +1,32 @@
-<!-- gen:mayoverwrite -->
 # Index Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+foo[ 1, 2 ]
 ```
 
 After:
+
 ```ruby
-bar
+foo[1, 2]
+```
+
+## Breaks the index brackets when necessary
+
+Before:
+
+```ruby
+foo[some_variable_name_that_is_used_as_an_index_in_this_example, another_long_name ]
+```
+
+After:
+
+```ruby
+foo[
+  some_variable_name_that_is_used_as_an_index_in_this_example,
+  another_long_name
+]
 ```

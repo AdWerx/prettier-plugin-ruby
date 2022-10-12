@@ -1,13 +1,14 @@
-// gen:mayoverwrite
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
 import { NodePrinter } from "../";
 const { builders: b } = doc;
 
 const printMasgn: NodePrinter<nodes.Masgn> = (path, options, print) => {
-  const node = path.getValue();
-  console.log(`-Masgn-`);
-  return `❗️Masgn`;
-}
+  return b.group([
+    path.call(print, "lhs"),
+    " =",
+    b.indent([b.line, path.call(print, "rhs")]),
+  ]);
+};
 
 export default printMasgn;

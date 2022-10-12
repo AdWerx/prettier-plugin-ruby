@@ -1,14 +1,29 @@
-<!-- gen:mayoverwrite -->
 # File Formatting
 
-## Fails because no tests are written
+## Works
 
 Before:
+
 ```ruby
-foo
+__FILE__
 ```
 
 After:
+
 ```ruby
-bar
+__FILE__
+```
+
+## Formats as an arg
+
+Before:
+
+```ruby
+def readdir(path = __FILE__)
+```
+
+After:
+
+```ruby
+def readdir(path = __FILE__)
 ```

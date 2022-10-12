@@ -1,14 +1,183 @@
-<!-- gen:mayoverwrite -->
 # If Formatting
 
-## Fails because no tests are written
+## Works
 
 Before:
+
 ```ruby
-foo
+if true; "foo"; end
 ```
 
 After:
+
 ```ruby
-bar
+if true
+  "foo"
+end
+```
+
+## Removes `then`
+
+Before:
+
+```ruby
+if true
+then
+end
+```
+
+After:
+
+```ruby
+if true
+end
+```
+
+## Prints the if true body
+
+Before:
+
+```ruby
+if true
+  "foo"
+end
+```
+
+After:
+
+```ruby
+if true
+  "foo"
+end
+```
+
+## Prints the if false body
+
+Before:
+
+```ruby
+if true
+  "foo"
+else
+  "false"
+end
+```
+
+After:
+
+```ruby
+if true
+  "foo"
+else
+  "false"
+end
+```
+
+## Prints the if false body
+
+Before:
+
+```ruby
+if true
+  "foo"
+elsif false
+  "false"
+else
+  "?"
+end
+```
+
+After:
+
+```ruby
+if true
+  "foo"
+elsif false
+  "false"
+else
+  "?"
+end
+```
+
+## Adds a `then` when the condition spans multiple lines
+
+Before:
+
+```ruby
+if "really_long_condition_that_cannot_be_broken" && "another_long_condition_that_exceeds_normal"
+  true
+else
+  "?"
+end
+```
+
+After:
+
+```ruby
+if "really_long_condition_that_cannot_be_broken" &&
+  "another_long_condition_that_exceeds_normal"
+then
+  true
+else
+  "?"
+end
+```
+
+## Adds a `then` when the condition spans multiple lines
+
+Before:
+
+```ruby
+if true
+  true
+elsif "really_long_condition_that_cannot_be_broken" && "another_long_condition_that_exceeds_normal"
+then
+  "?"
+end
+```
+
+After:
+
+```ruby
+if true
+  true
+elsif "really_long_condition_that_cannot_be_broken" &&
+  "another_long_condition_that_exceeds_normal"
+then
+  "?"
+end
+```
+
+## Nests
+
+Before:
+
+```ruby
+if true
+  if false
+    if true
+    elsif true
+      if "long codition long condition long condition" && "long condition long condition"
+        "ok"
+      end
+    end
+  end
+end
+```
+
+After:
+
+```ruby
+if true
+  if false
+    if true
+    elsif true
+      if "long codition long condition long condition" &&
+        "long condition long condition"
+      then
+        "ok"
+      end
+    end
+  end
+end
 ```

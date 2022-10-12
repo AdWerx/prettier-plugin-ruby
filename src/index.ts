@@ -1,89 +1,22 @@
-import { Loc, parse, nodes, Node } from "lib-ruby-parser";
+import { Loc, parse, nodes, Node, Comment } from "lib-ruby-parser";
 import { AstPath, Doc, Parser, ParserOptions, Printer } from "prettier";
 
 export const RUBY = "ruby";
 export const DEFAULT_QUOTE = '"';
 
 export interface RubyParserOptions extends ParserOptions<Node | null> {
-  parentWithImplicitSymbolChildren?: Node;
-  parentWithImplicitStringChildren?: Node;
+  comments?: Comment[];
 }
 
-// type ParserOptionsKey = keyof RubyParserOptions;
-
-// export const withContext = (
-//   options: RubyParserOptions,
-//   {
-//     changes,
-//   }: { changes: Partial<RubyParserOptions> },
-//   fn: () => Doc
-// ): Doc => {
-//   const originals: { [key: string]: unknown } = {};
-//   Object.keys(changes).forEach((key: string) => {
-//     originals[key] =
-//   });
-//   return fn();
-// };
-
-export type Context = {
-  node?: Node;
-};
-export interface Wrapper {
-  (options: RubyParserOptions, context: Context, fn: () => Doc): Doc;
-}
-
-export const withNoop = (
-  options: RubyParserOptions,
-  context: Context,
-  fn: () => Doc
-): Doc => {
-  return fn();
-};
-
-export const withImplicitStringChildren = (
-  options: RubyParserOptions,
-  context: Context,
-  fn: () => Doc
-): Doc => {
-  const original = options.parentWithImplicitStringChildren;
-  options.parentWithImplicitStringChildren = context.node;
-  const result = fn();
-  options.parentWithImplicitStringChildren = original;
-  return result;
-};
-
-export const withImplicitSymbolChildren = (
-  options: RubyParserOptions,
-  context: Context,
-  fn: () => Doc
-): Doc => {
-  const original = options.parentWithImplicitSymbolChildren;
-  options.parentWithImplicitSymbolChildren = context.node;
-  const result = fn();
-  options.parentWithImplicitSymbolChildren = original;
-  return result;
-};
-
-// export const withContext = (
-//   {
-//     options,
-//     changes,
-//   }: {
-//     options: RubyParserOptions;
-//     changes: Partial<RubyParserOptions>;
-//   },
-//   fn: () => Doc
-// ): Doc => {
-//   const originals: Partial<RubyParserOptions> = {};
-//   Object.keys(changes).forEach((key) => {
-//     (originals as any)[key] = (options as any)[key];
-//   });
-//   const result = fn();
-//   Object.keys(changes).forEach((key) => {
-//     (options as any)[key] = (originals as any)[key];
-//   });
-//   return result;
-// };
+export const parentsWithImplicitStringChildren = new WeakMap<
+  Node,
+  nodes.Array | nodes.Regexp | nodes.Heredoc
+>();
+export const parentsWithImplicitSymbolChildren = new WeakMap<
+  Node,
+  nodes.Array | nodes.Alias | nodes.Pair
+>();
+export const printedHeredocEndLocations: Loc[] = [];
 
 export type NodePrinter<T> = (
   path: AstPath<T>,
@@ -106,26 +39,30 @@ export const languages = [
 ];
 
 export interface LocatedNode {
-  begin_l: Loc;
-  end_l: Loc;
+  expression_l: Loc;
 }
+
+export const sourceFromLocation = (options: RubyParserOptions, loc: Loc) => {
+  return options.originalText.substring(loc.begin, loc.end);
+};
 
 const rubyParser: Parser<LocatedNode> = {
   parse(text, parsers, options) {
     const result = parse(text, options.filepath || "(eval)", (_, b) => b);
     if (!result.ast) throw new Error("could not parse AST");
+    printedHeredocEndLocations.splice(0, printedHeredocEndLocations.length);
     // options.tokens = result.tokens;
     // options.magic_comments = result.magic_comments;
-    // options.comments = result.comments;
+    (options as RubyParserOptions).comments = result.comments;
     // options.input = result.input;
     return result.ast as LocatedNode;
   },
   astFormat: RUBY,
   locStart(node) {
-    return node.begin_l.begin;
+    return node.expression_l.begin;
   },
   locEnd(node) {
-    return node.end_l.end;
+    return node.expression_l.end;
   },
 };
 
@@ -143,6 +80,9 @@ const rubyPrinter: Printer<Node | null> = {
     if (!(type in nodePrinters)) {
       throw new Error(`unrecognized node type: ${type}`);
     }
+
+    // console.log((options as RubyParserOptions).comments);
+    // console.log(type, (path.getValue() as LocatedNode).expression_l);
 
     return nodePrinters[type].call(null, path, options, print);
   },

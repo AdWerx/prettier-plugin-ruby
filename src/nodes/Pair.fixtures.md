@@ -1,14 +1,15 @@
-<!-- gen:mayoverwrite -->
 # Pair Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+{ 'foo': bar, :baz => foo }
 ```
 
 After:
+
 ```ruby
-bar
+{ foo: bar, baz: foo }
 ```

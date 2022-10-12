@@ -1,13 +1,19 @@
-// gen:mayoverwrite
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
 import { NodePrinter } from "../";
 const { builders: b } = doc;
 
-const printMatchPatternP: NodePrinter<nodes.MatchPatternP> = (path, options, print) => {
+const printMatchPatternP: NodePrinter<nodes.MatchPatternP> = (
+  path,
+  options,
+  print
+) => {
   const node = path.getValue();
-  console.log(`-MatchPatternP-`);
-  return `❗️MatchPatternP`;
-}
+  return b.group([
+    path.call(print, "value"),
+    " in ",
+    path.call(print, "pattern"),
+  ]);
+};
 
 export default printMatchPatternP;

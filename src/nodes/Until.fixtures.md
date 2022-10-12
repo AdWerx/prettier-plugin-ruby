@@ -1,14 +1,19 @@
-<!-- gen:mayoverwrite -->
 # Until Formatting
 
-## Fails because no tests are written
+## Works
 
 Before:
+
 ```ruby
-foo
+until foo do
+  bar
+end
 ```
 
 After:
+
 ```ruby
-bar
+until foo do
+  bar
+end
 ```

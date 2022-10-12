@@ -1,14 +1,17 @@
-<!-- gen:mayoverwrite -->
 # Block Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+->() {
+
+}
 ```
 
 After:
+
 ```ruby
-bar
+-> {}
 ```

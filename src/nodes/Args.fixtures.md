@@ -1,14 +1,15 @@
-<!-- gen:mayoverwrite -->
 # Args Formatting
 
-## Fails because no tests are written
+## Works
 
 Before:
+
 ```ruby
-foo
+def sum(one, two, three, four)
 ```
 
 After:
+
 ```ruby
-bar
+def sum(one, two, three, four)
 ```

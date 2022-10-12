@@ -1,14 +1,44 @@
-<!-- gen:mayoverwrite -->
 # Const Formatting
 
-## Fails because no tests are written
+## Formats a global constant
 
 Before:
+
 ```ruby
-foo
+::Global
 ```
 
 After:
+
 ```ruby
-bar
+::Global
+```
+
+## Formats a nested constant
+
+Before:
+
+```ruby
+::Global::Path::To::My::Constant
+```
+
+After:
+
+```ruby
+::Global::Path::To::My::Constant
+```
+
+## Breaks a constant when necessary
+
+Before:
+
+```ruby
+::Global::LongPath::ToThe::My::ConstantWithAnAbsurdlyLongNameThatExceedsPrintWidth
+```
+
+After:
+
+```ruby
+::Global::LongPath::ToThe::My::
+  ConstantWithAnAbsurdlyLongNameThatExceedsPrintWidth
 ```

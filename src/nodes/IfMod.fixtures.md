@@ -1,14 +1,61 @@
-<!-- gen:mayoverwrite -->
 # IfMod Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+foo if bar
 ```
 
 After:
+
 ```ruby
-bar
+foo if bar
+```
+
+## Formats
+
+Before:
+
+```ruby
+foo unless bar
+```
+
+After:
+
+```ruby
+foo unless bar
+```
+
+## Breaks if when necessary
+
+Before:
+
+```ruby
+foofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofo if barfoofoofoo
+```
+
+After:
+
+```ruby
+if barfoofoofoo
+  foofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofo
+end
+```
+
+## Breaks unless when necessary
+
+Before:
+
+```ruby
+foofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofo unless barfoofoofoo
+```
+
+After:
+
+```ruby
+unless barfoofoofoo
+  foofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofo
+end
 ```

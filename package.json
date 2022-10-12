@@ -5,7 +5,8 @@
     "build": "tsc",
     "try": "build && prettier --plugin ./build samples/",
     "watch": "tsc --watch",
-    "test": "jest"
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "lib-ruby-parser": "file:../node-bindings/pkg",

@@ -1,14 +1,17 @@
-<!-- gen:mayoverwrite -->
 # MatchCurrentLine Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+if /foo/
+  end
 ```
 
 After:
+
 ```ruby
-bar
+if /foo/
+end
 ```

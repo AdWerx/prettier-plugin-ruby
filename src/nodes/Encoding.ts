@@ -1,13 +1,10 @@
-// gen:mayoverwrite
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
 import { NodePrinter } from "../";
 const { builders: b } = doc;
 
 const printEncoding: NodePrinter<nodes.Encoding> = (path, options, print) => {
-  const node = path.getValue();
-  console.log(`-Encoding-`);
-  return `❗️Encoding`;
-}
+  return "__ENCODING__";
+};
 
 export default printEncoding;

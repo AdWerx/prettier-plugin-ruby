@@ -1,4 +1,3 @@
-// gen:mayoverwrite
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
 import { NodePrinter } from "../";
@@ -6,8 +5,7 @@ const { builders: b } = doc;
 
 const printLvar: NodePrinter<nodes.Lvar> = (path, options, print) => {
   const node = path.getValue();
-  console.log(`-Lvar-`);
-  return `❗️Lvar`;
-}
+  return node.name;
+};
 
 export default printLvar;

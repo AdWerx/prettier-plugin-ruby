@@ -1,14 +1,29 @@
-<!-- gen:mayoverwrite -->
 # Rational Formatting
 
-## Fails because no tests are written
+## Formats a rational number
 
 Before:
+
 ```ruby
-foo
+1r
 ```
 
 After:
+
 ```ruby
-bar
+1r
+```
+
+## Formats a rational number in an expression
+
+Before:
+
+```ruby
+2/3r
+```
+
+After:
+
+```ruby
+2/3r
 ```

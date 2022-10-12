@@ -1,14 +1,33 @@
-<!-- gen:mayoverwrite -->
 # Defs Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+def self.name
+  "foo"
+end
 ```
 
 After:
+
 ```ruby
-bar
+def self.name
+  "foo"
+end
+```
+
+## Formats an endless method definition
+
+Before:
+
+```ruby
+def self.m() = 42
+```
+
+After:
+
+```ruby
+def self.m() = 42
 ```

@@ -1,14 +1,29 @@
-<!-- gen:mayoverwrite -->
 # Line Formatting
 
-## Fails because no tests are written
+## Works
 
 Before:
+
 ```ruby
-foo
+__LINE__
 ```
 
 After:
+
 ```ruby
-bar
+__LINE__
+```
+
+## Works
+
+Before:
+
+```ruby
+track line: __LINE__
+```
+
+After:
+
+```ruby
+track line: __LINE__
 ```

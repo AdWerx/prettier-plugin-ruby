@@ -1,14 +1,33 @@
-<!-- gen:mayoverwrite -->
 # Undef Formatting
 
-## Fails because no tests are written
+## Works
 
 Before:
+
 ```ruby
-foo
+undef mymethod
 ```
 
 After:
+
 ```ruby
-bar
+undef :mymethod
+```
+
+## Breaks when necessary
+
+Before:
+
+```ruby
+undef mymethod, anothermethod, anotherlongermethod, thelongestmethodsofar, thatmethodthatpushestheprintwidth
+```
+
+After:
+
+```ruby
+undef :mymethod,
+  :anothermethod,
+  :anotherlongermethod,
+  :thelongestmethodsofar,
+  :thatmethodthatpushestheprintwidth
 ```

@@ -38,7 +38,10 @@ export const runNodeFixtureTests = (name: string) => {
     test.each(
       loadFixtures(path.resolve(__dirname, `./nodes/${name}.fixtures.md`))
     )("$title", ({ before, after }) => {
-      expect(prettier.format(before, formatOptions)).toBe(after);
+      const formatted = prettier.format(before, formatOptions);
+      expect(formatted).toBe(after);
+      const formattedAgain = prettier.format(formatted, formatOptions);
+      expect(formattedAgain).toBe(formatted);
     });
   });
 };

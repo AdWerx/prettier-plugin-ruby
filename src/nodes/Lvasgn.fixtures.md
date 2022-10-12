@@ -1,14 +1,15 @@
-<!-- gen:mayoverwrite -->
 # Lvasgn Formatting
 
-## Fails because no tests are written
+## Works
 
 Before:
+
 ```ruby
-foo
+foo = 1
 ```
 
 After:
+
 ```ruby
-bar
+foo = 1
 ```

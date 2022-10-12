@@ -1,14 +1,32 @@
-<!-- gen:mayoverwrite -->
 # Class Formatting
 
-## Fails because no tests are written
+## Works
 
 Before:
+
 ```ruby
-foo
+class Foo
+end
 ```
 
 After:
+
 ```ruby
-bar
+class Foo; end
+```
+
+## Breaks when the class has a body
+
+Before:
+
+```ruby
+class Foo; def foo; end; end
+```
+
+After:
+
+```ruby
+class Foo
+  def foo; end
+end
 ```

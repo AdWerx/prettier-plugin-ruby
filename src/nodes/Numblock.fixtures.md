@@ -1,14 +1,15 @@
-<!-- gen:mayoverwrite -->
 # Numblock Formatting
 
-## Fails because no tests are written
+## Format
 
 Before:
+
 ```ruby
-foo
+foo { _1 }
 ```
 
 After:
+
 ```ruby
-bar
+foo { _1 }
 ```

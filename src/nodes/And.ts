@@ -4,12 +4,11 @@ import { NodePrinter } from "../";
 const { builders: b } = doc;
 
 const printAnd: NodePrinter<nodes.And> = (path, options, print) => {
-  const node = path.getValue();
-
-  path.call(print, "lhs");
-  path.call(print, "rhs");
-  console.log("-And-");
-  return `❗️And`;
+  return b.group([
+    path.call(print, "lhs"),
+    " &&",
+    b.indent([b.line, path.call(print, "rhs")]),
+  ]);
 };
 
 export default printAnd;

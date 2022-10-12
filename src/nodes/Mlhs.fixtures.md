@@ -1,14 +1,18 @@
-<!-- gen:mayoverwrite -->
 # Mlhs Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+(
+  a,
+  b
+) = [c, d]
 ```
 
 After:
+
 ```ruby
-bar
+(a, b) = [c, d]
 ```

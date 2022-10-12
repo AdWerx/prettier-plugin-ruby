@@ -5,12 +5,14 @@ const { builders: b } = doc;
 
 const printClass: NodePrinter<nodes.Class> = (path, options, print) => {
   const node = path.getValue();
-  console.log(`-Class-`);
-  path.call(print, "name");
-  path.call(print, "superclass");
-  path.call(print, "body");
-
-  return `❗️Class`;
+  return b.group([
+    "class ",
+    path.call(print, "name"),
+    node.superclass ? [" < ", path.call(print, "superclass")] : "",
+    node.body ? b.indent([b.hardline, path.call(print, "body")]) : ";",
+    b.line,
+    "end",
+  ]);
 };
 
 export default printClass;

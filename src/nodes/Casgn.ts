@@ -5,10 +5,14 @@ const { builders: b } = doc;
 
 const printCasgn: NodePrinter<nodes.Casgn> = (path, options, print) => {
   const node = path.getValue();
-  console.log(`-Casgn-`);
   path.call(print, "scope");
   path.call(print, "value");
-  return `❗️Casgn`;
+  return b.group([
+    node.scope ? [path.call(print, "scope"), "::"] : "",
+    node.name,
+    " =",
+    b.indent([b.line, path.call(print, "value")]),
+  ]);
 };
 
 export default printCasgn;

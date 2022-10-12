@@ -5,7 +5,6 @@ const { builders: b } = doc;
 
 const printArg: NodePrinter<nodes.Arg> = (path, options, print) => {
   const node = path.getValue();
-  console.log("-Arg-");
   return node.name;
 };
 

@@ -1,14 +1,29 @@
-<!-- gen:mayoverwrite -->
 # Arg Formatting
 
-## Fails because no tests are written
+## Works
 
 Before:
+
 ```ruby
-foo
+def foo(v)
 ```
 
 After:
+
 ```ruby
-bar
+def foo(v)
+```
+
+## Works
+
+Before:
+
+```ruby
+proc { |e| }
+```
+
+After:
+
+```ruby
+proc { |e| }
 ```

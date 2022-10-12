@@ -8,8 +8,17 @@ const printBlock: NodePrinter<nodes.Block> = (path, options, print) => {
   path.call(print, "call");
   path.call(print, "args");
   path.call(print, "body");
-  console.log(`-Block-`);
-  return `❗️Block`;
+
+  return b.group([
+    path.call(print, "call"),
+    node.args && (node.args as nodes.Args).args.length
+      ? [" ", path.call(print, "args")]
+      : "",
+    " ",
+    b.ifBreak("do", "{"),
+    node.body ? [b.indent([b.line, path.call(print, "body")]), b.line] : "",
+    b.ifBreak("end", "}"),
+  ]);
 };
 
 export default printBlock;

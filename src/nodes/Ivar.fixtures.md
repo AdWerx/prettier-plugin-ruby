@@ -1,14 +1,15 @@
-<!-- gen:mayoverwrite -->
 # Ivar Formatting
 
-## Fails because no tests are written
+## Formats an instance variable reference
 
 Before:
+
 ```ruby
-foo
+@foo
 ```
 
 After:
+
 ```ruby
-bar
+@foo
 ```

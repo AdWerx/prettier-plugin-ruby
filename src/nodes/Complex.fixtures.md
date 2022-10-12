@@ -1,14 +1,29 @@
-<!-- gen:mayoverwrite -->
 # Complex Formatting
 
-## Fails because no tests are written
+## Formats a Complex literal
 
 Before:
+
 ```ruby
-foo
+1i
 ```
 
 After:
+
 ```ruby
-bar
+1i
+```
+
+## Formats a complex literal in an expression
+
+Before:
+
+```ruby
+2+1i
+```
+
+After:
+
+```ruby
+2+1i
 ```

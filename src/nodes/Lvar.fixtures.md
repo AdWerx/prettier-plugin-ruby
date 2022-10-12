@@ -1,14 +1,35 @@
-<!-- gen:mayoverwrite -->
 # Lvar Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
+foo = nil
 foo
 ```
 
 After:
+
 ```ruby
-bar
+foo = nil
+foo
+```
+
+## Formats
+
+Before:
+
+```ruby
+def foo(bar)
+  bar
+end
+```
+
+After:
+
+```ruby
+def foo(bar)
+  bar
+end
 ```

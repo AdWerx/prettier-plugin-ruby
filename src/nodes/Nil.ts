@@ -5,9 +5,7 @@ import { NodePrinter } from "../";
 const { builders: b } = doc;
 
 const printNil: NodePrinter<nodes.Nil> = (path, options, print) => {
-  const node = path.getValue();
-  console.log(`-Nil-`);
-  return `❗️Nil`;
-}
+  return "nil";
+};
 
 export default printNil;

@@ -1,14 +1,15 @@
-<!-- gen:mayoverwrite -->
 # Nil Formatting
 
-## Fails because no tests are written
+## Works
 
 Before:
+
 ```ruby
-foo
+nil
 ```
 
 After:
+
 ```ruby
-bar
+nil
 ```

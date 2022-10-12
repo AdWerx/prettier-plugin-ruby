@@ -1,14 +1,15 @@
-<!-- gen:mayoverwrite -->
 # Cbase Formatting
 
-## Fails because no tests are written
+## Works
 
 Before:
+
 ```ruby
-foo
+::Foo
 ```
 
 After:
+
 ```ruby
-bar
+::Foo
 ```

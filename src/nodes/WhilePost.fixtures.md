@@ -1,14 +1,17 @@
-<!-- gen:mayoverwrite -->
 # WhilePost Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+begin; foo; end while bar
 ```
 
 After:
+
 ```ruby
-bar
+begin
+  foo
+end while bar
 ```

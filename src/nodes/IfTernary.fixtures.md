@@ -1,14 +1,31 @@
-<!-- gen:mayoverwrite -->
 # IfTernary Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+foo  ? bar  : baz
 ```
 
 After:
+
 ```ruby
-bar
+foo ? bar : baz
+```
+
+## Formats a multi-line into a single
+
+Before:
+
+```ruby
+foo ?
+  bar :
+  baz
+```
+
+After:
+
+```ruby
+foo ? bar : baz
 ```

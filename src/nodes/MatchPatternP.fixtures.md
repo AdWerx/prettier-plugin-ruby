@@ -1,14 +1,15 @@
-<!-- gen:mayoverwrite -->
 # MatchPatternP Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+foo in  bar
 ```
 
 After:
+
 ```ruby
-bar
+foo in bar
 ```

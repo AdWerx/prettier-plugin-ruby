@@ -5,9 +5,7 @@ import { NodePrinter } from "../";
 const { builders: b } = doc;
 
 const printFalse: NodePrinter<nodes.False> = (path, options, print) => {
-  const node = path.getValue();
-  console.log(`-False-`);
-  return `❗️False`;
-}
+  return "false";
+};
 
 export default printFalse;

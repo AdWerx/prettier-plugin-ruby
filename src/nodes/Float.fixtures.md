@@ -1,14 +1,29 @@
-<!-- gen:mayoverwrite -->
 # Float Formatting
 
-## Fails because no tests are written
+## Formats a float
 
 Before:
+
 ```ruby
-foo
+1.0
 ```
 
 After:
+
 ```ruby
-bar
+1.0
+```
+
+## Formats a signed float
+
+Before:
+
+```ruby
+-1.0
+```
+
+After:
+
+```ruby
+-1.0
 ```

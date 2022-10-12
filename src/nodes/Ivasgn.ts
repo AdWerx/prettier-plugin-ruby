@@ -1,13 +1,11 @@
-// gen:mayoverwrite
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
 import { NodePrinter } from "../";
+import printLvasgn from "./Lvasgn";
 const { builders: b } = doc;
 
-const printIvasgn: NodePrinter<nodes.Ivasgn> = (path, options, print) => {
-  const node = path.getValue();
-  console.log(`-Ivasgn-`);
-  return `❗️Ivasgn`;
-}
+const printIvasgn: NodePrinter<nodes.Ivasgn> = (...args) => {
+  return printLvasgn(...args);
+};
 
 export default printIvasgn;

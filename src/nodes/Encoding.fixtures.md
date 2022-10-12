@@ -1,14 +1,29 @@
-<!-- gen:mayoverwrite -->
 # Encoding Formatting
 
-## Fails because no tests are written
+## Works
 
 Before:
+
 ```ruby
-foo
+__ENCODING__
 ```
 
 After:
+
 ```ruby
-bar
+__ENCODING__
+```
+
+## Formats as an arg
+
+Before:
+
+```ruby
+def encode(encoding = __ENCODING__)
+```
+
+After:
+
+```ruby
+def encode(encoding = __ENCODING__)
 ```
