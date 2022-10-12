@@ -1,14 +1,599 @@
-<!-- gen:mayoverwrite -->
 # Heredoc Formatting
 
-## Fails because no tests are written
+## [indention-aware=-] Formats multiple lines
 
 Before:
+
 ```ruby
-foo
+<<-TEXT
+  A lot of text
+  on multiple lines
+  where I wanted them broken
+TEXT
 ```
 
 After:
+
 ```ruby
-bar
+<<-TEXT
+  A lot of text
+  on multiple lines
+  where I wanted them broken
+TEXT
+```
+
+## Formats empty
+
+Before:
+
+```ruby
+<<-TEXT
+TEXT
+```
+
+After:
+
+```ruby
+<<-TEXT
+TEXT
+```
+
+## Removes newline isolation and makes use of the original line
+
+Before:
+
+```ruby
+puts(<<~TEXT
+    Hello
+  TEXT
+) { "sample block" }
+```
+
+After:
+
+```ruby
+puts(<<~TEXT) { "sample block" }
+    Hello
+  TEXT
+```
+
+## Can format in a method chain without newline isolation
+
+Before:
+
+```ruby
+  select(
+    <<~EOS.squish
+      some complicated query here
+    EOS
+  )
+    .data_push
+    .having("something")
+```
+
+After:
+
+```ruby
+select(<<~EOS.squish).data_push.having("something")
+      some complicated query here
+    EOS
+```
+
+## Allow subsequent nodes on the same line when they fit
+
+Before:
+
+```ruby
+foo(<<-BAR, ["value", "value", 125_484, 0o24024103])
+  text
+BAR
+```
+
+After:
+
+```ruby
+foo(<<-BAR, ["value", "value", 125_484, 0o24024103])
+  text
+BAR
+```
+
+## Formats around subsequent items on the same line when they break
+
+Before:
+
+```ruby
+call <<-BAR, ["foofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoof"]
+  text
+BAR
+```
+
+After:
+
+```ruby
+call(
+  <<-BAR,
+  text
+BAR
+  ["foofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoof"]
+)
+```
+
+## Allows a block on the same line when it fits
+
+Before:
+
+```ruby
+call(1, 2, 3,
+  <<-HERE
+  foo
+HERE
+) do
+  puts "more code"
+end
+```
+
+After:
+
+```ruby
+call(1, 2, 3, <<-HERE) { puts "more code" }
+  foo
+HERE
+```
+
+## Formats with interpolation
+
+Before:
+
+```ruby
+<<-TEXT
+  My text
+  #{interpolation}
+  with interpolation
+TEXT
+```
+
+After:
+
+```ruby
+<<-TEXT
+  My text
+  #{interpolation}
+  with interpolation
+TEXT
+```
+
+## Formats with nested interpolation
+
+Before:
+
+```ruby
+<<-PARENT
+Parent contents are written here.
+#{<<-CHILD}
+Nested contents are written here.
+CHILD
+PARENT
+```
+
+After:
+
+```ruby
+<<-PARENT
+Parent contents are written here.
+#{<<-CHILD}
+Nested contents are written here.
+CHILD
+PARENT
+```
+
+## Moves a method call onto the identifier (mod=-)
+
+Before:
+
+```ruby
+def foo
+  txt = <<-HERE
+    foo
+  HERE
+  .strip
+end
+```
+
+After:
+
+```ruby
+def foo
+  txt = <<-HERE.strip
+    foo
+  HERE
+end
+```
+
+## Allows chaining on the identifier (mod=-)
+
+Before:
+
+```ruby
+def foo
+  txt = <<-HERE.strip.chomp
+    foo
+  HERE
+end
+```
+
+After:
+
+```ruby
+def foo
+  txt = <<-HERE.strip.chomp
+    foo
+  HERE
+end
+```
+
+## Formats indentation-aware heredocs
+
+Before:
+
+```ruby
+if true
+  <<~HERE
+    I don't want extra indentation!
+  HERE
+end
+```
+
+After:
+
+```ruby
+if true
+  <<~HERE
+    I don't want extra indentation!
+  HERE
+end
+```
+
+## Formats indentation-aware heredocs with interpolation
+
+Before:
+
+```ruby
+if true
+  <<~HERE
+    My text
+    #{interpolation}
+    with interpolation
+  HERE
+end
+```
+
+After:
+
+```ruby
+if true
+  <<~HERE
+    My text
+    #{interpolation}
+    with interpolation
+  HERE
+end
+```
+
+## Formats indentation-aware heredocs as an assignment
+
+Before:
+
+```ruby
+if true
+  abc = <<~HERE
+    I don't want extra indentation!
+  HERE
+end
+```
+
+After:
+
+```ruby
+if true
+  abc = <<~HERE
+    I don't want extra indentation!
+  HERE
+end
+```
+
+## Formats indentation-aware heredocs with interpolation
+
+Before:
+
+```ruby
+if true
+  <<~PARENT
+    The parent is indent twice, but will have no real indentation.
+    #{<<~CHILD}
+      The child is indented thrice, but will have no real indentation.
+    CHILD
+  PARENT
+end
+```
+
+After:
+
+```ruby
+if true
+  <<~PARENT
+    The parent is indent twice, but will have no real indentation.
+    #{<<~CHILD}
+      The child is indented thrice, but will have no real indentation.
+    CHILD
+  PARENT
+end
+```
+
+## Formats a heredoc as a last argument (mod=-)
+
+Before:
+
+```ruby
+call(1, 2, 3, <<-HERE)
+  foo
+HERE
+```
+
+After:
+
+```ruby
+call(1, 2, 3, <<-HERE)
+  foo
+HERE
+```
+
+## Formats two heredocs as a last arguments (mod=-)
+
+Before:
+
+```ruby
+call(1, 2, 3, <<-HERE, <<-THERE)
+  here
+HERE
+  there
+THERE
+```
+
+After:
+
+```ruby
+call(1, 2, 3, <<-HERE, <<-THERE)
+  here
+HERE
+  there
+THERE
+```
+
+## Formats a heredoc as a last argument (no parens) (mod=-)
+
+Before:
+
+```ruby
+call 1, 2, 3, <<-HERE
+  foo
+HERE
+```
+
+After:
+
+```ruby
+call 1, 2, 3, <<-HERE
+  foo
+HERE
+```
+
+## Formats two heredocs as a last arguments (no parens) (mod=-)
+
+Before:
+
+```ruby
+call 1, 2, 3, <<-HERE, <<-THERE
+  here
+HERE
+  there
+THERE
+```
+
+After:
+
+```ruby
+call 1, 2, 3, <<-HERE, <<-THERE
+  here
+HERE
+  there
+THERE
+```
+
+## Formats a heredoc as a middle argument (mod=-)
+
+Before:
+
+```ruby
+foo(1, (
+<<-HERE
+  foo
+HERE
+), 2)
+```
+
+After:
+
+```ruby
+foo(1, (<<-HERE), 2)
+  foo
+HERE
+```
+
+## Indents the content when the heredoc is indentation-aware
+
+Before:
+
+```ruby
+foo = <<~TEXT
+tooclose
+TEXT
+```
+
+After:
+
+```ruby
+foo = <<~TEXT
+tooclose
+TEXT
+```
+
+## Indents the content when the heredoc is indentation-aware
+
+Before:
+
+```ruby
+foo = <<~TEXT
+                              farout
+      TEXT
+```
+
+After:
+
+```ruby
+foo = <<~TEXT
+                              farout
+      TEXT
+```
+
+## Unwraps and rewraps the identifier
+
+Before:
+
+```ruby
+foo = (<<~TEXT
+  bar
+TEXT
+).strip
+```
+
+After:
+
+```ruby
+foo = (<<~TEXT).strip
+  bar
+TEXT
+```
+
+## Preserves a comment trailing the identifier
+
+Before:
+
+```ruby
+<<~HERE # foo
+  foo
+HERE
+```
+
+After:
+
+```ruby
+<<~HERE # foo
+  foo
+HERE
+```
+
+## Preserves a comment trailing the identifier
+
+Before:
+
+```ruby
+list << <<~HERE # foo
+  foo
+HERE
+```
+
+After:
+
+```ruby
+list << <<~HERE # foo
+  foo
+HERE
+```
+
+## [indention-unaware] Does not indent contents
+
+Before:
+
+```ruby
+str = <<'EOF'
+Stanza one
+
+Stanza two
+EOF
+```
+
+After:
+
+```ruby
+str = <<'EOF'
+Stanza one
+
+Stanza two
+EOF
+```
+
+## [indention-unaware] Handles overlapping heredocs
+
+Before:
+
+```ruby
+some_method(<<STR1, <<STR2, <<STR3)
+first piece
+of text...
+STR1
+second piece...
+STR2
+third piece
+of text.
+STR3
+```
+
+After:
+
+```ruby
+some_method(<<STR1, <<STR2, <<STR3)
+first piece
+of text...
+STR1
+second piece...
+STR2
+third piece
+of text.
+STR3
+```
+
+## [embedded] Does not format embedded ruby
+
+Before:
+
+```ruby
+<<~TEXT
+  | things table |
+  | --- |
+  #{
+    [1,2,3].map{|a|"|#{a.upcase}|"}.join("\n")
+  }
+TEXT
+```
+
+After:
+
+```ruby
+<<~TEXT
+  | things table |
+  | --- |
+  #{
+    [1,2,3].map{|a|"|#{a.upcase}|"}.join("\n")
+  }
+TEXT
 ```
