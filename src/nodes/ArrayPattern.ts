@@ -1,17 +1,11 @@
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
 import { NodePrinter } from "../";
+import printArray from "./Array";
 const { builders: b } = doc;
 
-const printArrayPattern: NodePrinter<nodes.ArrayPattern> = (
-  path,
-  options,
-  print
-) => {
-  const node = path.getValue();
-  path.map(print, "elements");
-  console.log("ArrayPattern");
-  return `❗️ArrayPattern`;
+const printArrayPattern: NodePrinter<nodes.ArrayPattern> = (...args) => {
+  return printArray(...args);
 };
 
 export default printArrayPattern;

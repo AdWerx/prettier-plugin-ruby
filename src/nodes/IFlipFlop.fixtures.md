@@ -1,14 +1,15 @@
-<!-- gen:mayoverwrite -->
 # IFlipFlop Formatting
 
 ## Fails because no tests are written
 
 Before:
+
 ```ruby
-foo
+foo..bar
 ```
 
 After:
+
 ```ruby
-bar
+foo..bar
 ```

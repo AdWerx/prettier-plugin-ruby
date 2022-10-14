@@ -1,14 +1,15 @@
-<!-- gen:mayoverwrite -->
 # OrAsgn Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+done ||= true
 ```
 
 After:
+
 ```ruby
-bar
+done ||= true
 ```

@@ -5,8 +5,7 @@ const { builders: b } = doc;
 
 const printBlockarg: NodePrinter<nodes.Blockarg> = (path, options, print) => {
   const node = path.getValue();
-  console.log(`-Blockarg-`);
-  return `❗️Blockarg`;
+  return ["&", node.name || ""];
 };
 
 export default printBlockarg;

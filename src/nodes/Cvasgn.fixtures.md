@@ -1,14 +1,29 @@
-<!-- gen:mayoverwrite -->
 # Cvasgn Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+@@name = "toby"
 ```
 
 After:
+
 ```ruby
-bar
+@@name = "toby"
+```
+
+## Formats with operator assignment
+
+Before:
+
+```ruby
+@@name += "toby"
+```
+
+After:
+
+```ruby
+@@name += "toby"
 ```

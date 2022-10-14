@@ -5,9 +5,11 @@ const { builders: b } = doc;
 
 const printBreak: NodePrinter<nodes.Break> = (path, options, print) => {
   const node = path.getValue();
-  console.log(`-Break-`);
-  path.map(print, "args");
-  return `❗️Break`;
+  return b.group([
+    "break",
+    node.args.length ? " " : "",
+    b.join([",", b.line], path.map(print, "args")),
+  ]);
 };
 
 export default printBreak;

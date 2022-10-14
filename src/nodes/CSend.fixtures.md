@@ -1,14 +1,15 @@
-<!-- gen:mayoverwrite -->
 # CSend Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+foo&.bar
 ```
 
 After:
+
 ```ruby
-bar
+foo&.bar
 ```

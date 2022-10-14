@@ -1,14 +1,30 @@
-<!-- gen:mayoverwrite -->
 # Str Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+"this is a string" \
+  " spanning multiple lines"
 ```
 
 After:
+
 ```ruby
-bar
+"this is a string spanning multiple lines"
+```
+
+## Formats methods called on it
+
+Before:
+
+```ruby
+"this is a string" .chomp
+```
+
+After:
+
+```ruby
+"this is a string".chomp
 ```

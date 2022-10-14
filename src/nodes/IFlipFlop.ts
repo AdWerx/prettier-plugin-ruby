@@ -1,13 +1,10 @@
-// gen:mayoverwrite
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
 import { NodePrinter } from "../";
 const { builders: b } = doc;
 
 const printIFlipFlop: NodePrinter<nodes.IFlipFlop> = (path, options, print) => {
-  const node = path.getValue();
-  console.log(`-IFlipFlop-`);
-  return `❗️IFlipFlop`;
-}
+  return b.group([path.call(print, "left"), "..", path.call(print, "right")]);
+};
 
 export default printIFlipFlop;

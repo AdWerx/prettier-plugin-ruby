@@ -7,7 +7,14 @@ const printLvasgn: NodePrinter<nodes.Lvasgn> = (path, options, print) => {
   const node = path.getValue();
   const parent = path.getParentNode();
   let assignOperator: Doc = [" ", "="];
-  if (parent instanceof nodes.RescueBody || parent instanceof nodes.Mlhs) {
+  if (
+    parent instanceof nodes.RescueBody ||
+    parent instanceof nodes.Mlhs ||
+    parent instanceof nodes.AndAsgn ||
+    parent instanceof nodes.OrAsgn ||
+    parent instanceof nodes.For ||
+    parent instanceof nodes.OpAsgn
+  ) {
     assignOperator = "";
   } else if (parent instanceof nodes.OpAsgn) {
     assignOperator = [" ", parent.operator, "="];

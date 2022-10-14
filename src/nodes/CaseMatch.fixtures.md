@@ -1,14 +1,24 @@
-<!-- gen:mayoverwrite -->
 # CaseMatch Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+case foo
+in [1, 2] then true
+in *foo then nil
+else
+  "bar"
+end
 ```
 
 After:
+
 ```ruby
-bar
+case foo
+in [1, 2] then true
+in *foo then nil
+else "bar"
+end
 ```

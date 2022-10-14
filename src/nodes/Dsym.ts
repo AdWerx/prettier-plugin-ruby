@@ -1,18 +1,31 @@
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
-import { NodePrinter, parentsWithImplicitSymbolChildren } from "../";
+import {
+  NodePrinter,
+  parentsWithImplicitStringChildren,
+  parentsWithImplicitSymbolChildren,
+} from "../";
 const { builders: b } = doc;
 
 const printDsym: NodePrinter<nodes.Dsym> = (path, options, print) => {
   let prefix = ":";
+  const node = path.getValue();
   const parent = path.getParentNode();
+  let quote = options.singleQuote ? "'" : '"';
+  parentsWithImplicitStringChildren.set(node, node);
   // if we're the immediate child of an array and the array has a %w or %W modifier,
   // we do not need quotes
   if (parent && parentsWithImplicitSymbolChildren.has(parent)) {
     prefix = "";
   }
-  // lossy
-  return b.group([prefix, "#{", ...path.map(print, "parts"), "}"]);
+  const parts = path.map(print, "parts");
+  if (parent && parentsWithImplicitStringChildren.has(parent)) {
+    // if we're the immediate child of an array and the array has a %w or %W modifier,
+    // we do not need quotes
+    return [prefix, ...parts];
+  } else {
+    return b.group([prefix, '"', parts, '"']);
+  }
 };
 
 export default printDsym;

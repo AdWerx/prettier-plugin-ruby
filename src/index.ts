@@ -1,5 +1,5 @@
 import { Loc, parse, nodes, Node, Comment } from "lib-ruby-parser";
-import { AstPath, Doc, Parser, ParserOptions, Printer } from "prettier";
+import { AstPath, doc, Doc, Parser, ParserOptions, Printer } from "prettier";
 
 export const RUBY = "ruby";
 export const DEFAULT_QUOTE = '"';
@@ -10,7 +10,7 @@ export interface RubyParserOptions extends ParserOptions<Node | null> {
 
 export const parentsWithImplicitStringChildren = new WeakMap<
   Node,
-  nodes.Array | nodes.Regexp | nodes.Heredoc
+  nodes.Array | nodes.Regexp | nodes.Heredoc | nodes.Xstr | nodes.Dstr
 >();
 export const parentsWithImplicitSymbolChildren = new WeakMap<
   Node,
@@ -81,10 +81,21 @@ const rubyPrinter: Printer<Node | null> = {
       throw new Error(`unrecognized node type: ${type}`);
     }
 
+    let trailer: Doc = "";
     // console.log((options as RubyParserOptions).comments);
     // console.log(type, (path.getValue() as LocatedNode).expression_l);
+    // if ("expression_l" in node) {
+    //   const trailingChar = sourceFromLocation(options, {
+    //     begin: (node as LocatedNode).expression_l.end,
+    //     end: (node as LocatedNode).expression_l.end + 2,
+    //   });
+    //   if (trailingChar == "\n\n") {
+    //     trailer = doc.builders.hardline;
+    //   }
+    // }
 
-    return nodePrinters[type].call(null, path, options, print);
+    const printed = nodePrinters[type].call(null, path, options, print);
+    return [printed, trailer];
   },
 };
 

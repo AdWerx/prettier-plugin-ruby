@@ -8,10 +8,13 @@ const printArrayPatternWithTail: NodePrinter<nodes.ArrayPatternWithTail> = (
   options,
   print
 ) => {
-  const node = path.getValue();
-  path.map(print, "elements");
-  console.log(`-ArrayPatternWithTail-`);
-  return `❗️ArrayPatternWithTail`;
+  return b.group([
+    "[",
+    b.indent([b.softline, b.join([",", b.line], path.map(print, "elements"))]),
+    b.softline,
+    ",",
+    "]",
+  ]);
 };
 
 export default printArrayPatternWithTail;

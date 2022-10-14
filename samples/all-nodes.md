@@ -67,10 +67,10 @@ class A::B < ::C
         in *foo then
             nil
         else
-            nil
+          "zar"
         end
 
-        case foo
+        case foo2
         in bar
             nil
         else
@@ -259,34 +259,22 @@ class A::B < ::C
 
     case foo
     in [1, [2], 3,] then true
-    in Foo
-      true
-    in Foo[1, 2, 3]
-      true
-    in { foo: bar }
-      true
-    in ^foo
-      true
+    in Foo then true
+    in Foo[1, 2, 3] then true
+    in { foo: bar } then true
+    in ^foo then true
     in foo => bar then true
-    in [*, foo, *] then
-      nil
-    in foo if bar
-      nil
-    in foo unless bar
-      nil
-    in foo | bar then
-      nil
-    in **nil then
-      nil
-    in *foo then
-      nil
-    else
-      nil
+    in [*, foo, *] then nil
+    in foo if bar then nil
+    in foo unless bar then nil
+    in foo | bar then nil
+    in **nil then nil
+    in *foo then nil
+    else nil
     end
 
-    case foo
-    in bar
-      nil
+    case foo2
+    in bar then nil
     else
       # empty else
     end
@@ -298,10 +286,10 @@ class A::B < ::C
     `foo`
 
     <<-HERE
-    HERE
+        HERE
 
     <<-`HERE`
-    HERE
+        HERE
 
     for a in [1, 2, 3] do
       "test"
@@ -309,11 +297,11 @@ class A::B < ::C
 
     proc { |;foo| foo }
     proc { |procarg| body }
-    proc { |(procarg)| body }
+    proc { |procarg| body }
 
     foo.bar(1, *baz, **baz, &baz)
     foo.bar = 42
-    foo&.bar()
+    foo&.bar
     foo&.bar = 42
 
     (foo..bar)
@@ -326,24 +314,25 @@ class A::B < ::C
     foo do
       break 42
       return 42
-      yield(42)
+      yield 42
       next 42
       redo
       retry
-      super(foo)
+      super foo
       super
     end
 
     case foo
     when bar then nil
-    else
-      nil
+    else nil
     end
 
     defined?(foo)
 
-    if foo..bar; end
-    if foo...bar; end
+    if foo..bar
+    end
+    if foo...bar
+    end
 
     begin
       foo

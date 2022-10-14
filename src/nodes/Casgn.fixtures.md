@@ -1,14 +1,29 @@
-<!-- gen:mayoverwrite -->
 # Casgn Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+NAME = "toby"
 ```
 
 After:
+
 ```ruby
-bar
+NAME = "toby"
+```
+
+## Formats with operator assignment
+
+Before:
+
+```ruby
+NAME += "toby"
+```
+
+After:
+
+```ruby
+NAME += "toby"
 ```

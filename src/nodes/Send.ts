@@ -15,7 +15,9 @@ const printSend: NodePrinter<nodes.Send> = (path, options, print) => {
   return b.group([
     recv,
     node.dot_l ? "." : recv ? " " : "",
-    node.method_name,
+    node.method_name.match(/\w=$/)
+      ? node.method_name.replace("=", " =")
+      : node.method_name,
     b.ifBreak("(", argWraps[0]),
     b.indent([b.softline, b.join([",", b.line], path.map(print, "args"))]),
     b.softline,

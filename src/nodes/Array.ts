@@ -25,6 +25,7 @@ const printArray: NodePrinter<nodes.Array> = (path, options, print) => {
   if (brackets[0].match(/^%i/i)) {
     delimiter = "";
     parentsWithImplicitSymbolChildren.set(node, node);
+    parentsWithImplicitStringChildren.set(node, node);
   }
   if (brackets[0].match(/^%w/i)) {
     delimiter = "";

@@ -1,14 +1,29 @@
-<!-- gen:mayoverwrite -->
 # OpAsgn Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+foo += "more"
 ```
 
 After:
+
 ```ruby
-bar
+foo += "more"
+```
+
+## Formats
+
+Before:
+
+```ruby
+bits &= 8
+```
+
+After:
+
+```ruby
+bits &= 8
 ```

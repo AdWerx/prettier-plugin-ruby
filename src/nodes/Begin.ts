@@ -19,8 +19,7 @@ const printBegin: NodePrinter<nodes.Begin> = (path, options, print) => {
   }
   return b.group([
     openCloseTokens[0],
-    b.join(b.softline, path.map(print, "statements")),
-    b.softline,
+    b.join(b.hardline, path.map(print, "statements")),
     openCloseTokens[1],
   ]);
 };

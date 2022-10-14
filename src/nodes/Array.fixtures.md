@@ -181,3 +181,17 @@ After:
 ```ruby
 %W(one two three)
 ```
+
+## Retains the % notation for %W and does not quote
+
+Before:
+
+```ruby
+%W(#{%w(hello)})
+```
+
+After:
+
+```ruby
+%W(#{%w(hello)})
+```

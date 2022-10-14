@@ -1,14 +1,59 @@
-<!-- gen:mayoverwrite -->
 # Dsym Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+:"#{
+  "this is okay"
+}"
 ```
 
 After:
+
 ```ruby
-bar
+:"#{"this is okay"}"
+```
+
+## Formats within a array
+
+Before:
+
+```ruby
+%I(#{foo} #{bar} #{baz})
+```
+
+After:
+
+```ruby
+%I(#{foo} #{bar} #{baz})
+```
+
+## Formats recursively
+
+Before:
+
+```ruby
+:"#{:"#{:"#{foo}"}"}"
+```
+
+After:
+
+```ruby
+:"#{:"#{:"#{foo}"}"}"
+```
+
+## Handles a nested symbol
+
+Before:
+
+```ruby
+:"#{:foo}"
+```
+
+After:
+
+```ruby
+:"#{:foo}"
 ```

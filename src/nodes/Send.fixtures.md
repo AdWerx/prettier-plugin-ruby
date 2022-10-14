@@ -1,14 +1,100 @@
-<!-- gen:mayoverwrite -->
 # Send Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+foo( "an arg")
 ```
 
 After:
+
 ```ruby
-bar
+foo("an arg")
+```
+
+## Formats detached method names (<<)
+
+Before:
+
+```ruby
+foo <<
+  "one"
+```
+
+After:
+
+```ruby
+foo << "one"
+```
+
+## Formats detached method names (=~)
+
+Before:
+
+```ruby
+/[a]/ =~ [bcd]
+```
+
+After:
+
+```ruby
+/[a]/ =~ [bcd]
+```
+
+## Formats detached method names (=)
+
+Before:
+
+```ruby
+foo.bar= 1
+```
+
+After:
+
+```ruby
+foo.bar = 1
+```
+
+## Formats detached method names (>=)
+
+Before:
+
+```ruby
+foo.bar >= 1
+```
+
+After:
+
+```ruby
+foo.bar >= 1
+```
+
+## Formats with an operator assignment (|=)
+
+Before:
+
+```ruby
+foo.bar |= 1
+```
+
+After:
+
+```ruby
+foo.bar |= 1
+```
+
+## Formats with an operator assignment (|=)
+
+Before:
+
+```ruby
+foo.bar ^= 1
+```
+
+After:
+
+```ruby
+foo.bar ^= 1
 ```

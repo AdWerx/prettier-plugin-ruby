@@ -1,14 +1,15 @@
-<!-- gen:mayoverwrite -->
 # MatchWithLvasgn Formatting
 
 ## Fails because no tests are written
 
 Before:
+
 ```ruby
-foo
+/(?<match>bar)/ =~ "bar"
 ```
 
 After:
+
 ```ruby
-bar
+/(?<match>bar)/ =~ "bar"
 ```

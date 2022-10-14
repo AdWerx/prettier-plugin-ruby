@@ -13,7 +13,12 @@ const printConstPattern: NodePrinter<nodes.ConstPattern> = (
   path.call(print, "const_");
   path.call(print, "pattern");
 
-  return `❗️ConstPattern`;
+  return b.group([
+    path.call(print, "const_"),
+    "[",
+    path.call(print, "pattern"),
+    "]",
+  ]);
 };
 
 export default printConstPattern;

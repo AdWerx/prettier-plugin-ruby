@@ -25,5 +25,5 @@ Before:
 After:
 
 ```ruby
-2/3r
+2 / 3r
 ```

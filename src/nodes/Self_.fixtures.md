@@ -1,14 +1,29 @@
-<!-- gen:mayoverwrite -->
-# Self_ Formatting
+# Self\_ Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+self
 ```
 
 After:
+
 ```ruby
-bar
+self
+```
+
+## Formats
+
+Before:
+
+```ruby
+[].include?(self)
+```
+
+After:
+
+```ruby
+[].include?(self)
 ```

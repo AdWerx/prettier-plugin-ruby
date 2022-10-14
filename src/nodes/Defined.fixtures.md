@@ -1,14 +1,31 @@
-<!-- gen:mayoverwrite -->
 # Defined Formatting
 
-## Fails because no tests are written
+## Formats
 
 Before:
+
 ```ruby
-foo
+defined?( SOME_CONST )
 ```
 
 After:
+
 ```ruby
-bar
+defined?(SOME_CONST)
+```
+
+## Breaks when necessary
+
+Before:
+
+```ruby
+defined?(SOME_CONST::SOME_CONST::SOME_CONST::SOME_CONST::SOME_CONST::SOME_CONSTNAME)
+```
+
+After:
+
+```ruby
+defined?(
+  SOME_CONST::SOME_CONST::SOME_CONST::SOME_CONST::SOME_CONST::SOME_CONSTNAME
+)
 ```
