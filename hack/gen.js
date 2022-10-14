@@ -32,8 +32,7 @@ runNodeFixtureTests("${name}");
 };
 
 const templateFixtures = (name) => {
-  return `<!-- gen:mayoverwrite -->
-# ${name} Formatting
+  return `# ${name} Formatting
 
 ## Fails because no tests are written
 
