@@ -1,14 +1,14 @@
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
-import { NodePrinter } from "../";
+import { NodePrinter } from "../printer";
 const { builders: b } = doc;
 
 const printPreexe: NodePrinter<nodes.Preexe> = (path, options, print) => {
+  const node = path.getValue();
   return b.group([
     "BEGIN ",
     "{",
-    b.indent([b.line, path.call(print, "body")]),
-    b.line,
+    node.body ? [b.indent([b.line, path.call(print, "body")]), b.line] : "",
     "}",
   ]);
 };

@@ -1,31 +1,66 @@
-import { nodes } from "lib-ruby-parser";
+import { Loc, Node, nodes } from "lib-ruby-parser";
 import { Doc, doc } from "prettier";
-import { NodePrinter } from "../";
+import { sourceFromLocation } from "../diagnostics";
+import { NodePrinter } from "../printer";
 const { builders: b } = doc;
 
-const printIf: NodePrinter<nodes.If> = (path, options, print) => {
-  const node = path.getValue();
-  const parts: Doc[] = [];
-  const keyword = options.originalText.substring(
-    node.keyword_l.begin,
-    node.keyword_l.end
-  );
-  parts.push(keyword, " ");
-  parts.push(b.group([path.call(print, "cond"), b.ifBreak([b.line, "then"])]));
-  if (node.if_true) {
-    parts.push(b.indent([b.hardline, path.call(print, "if_true")]));
-  }
-  if (node.else_l) {
-    const if_false = [b.hardline, path.call(print, "if_false")];
-    parts.push([
-      node.if_false instanceof nodes.If
-        ? if_false
-        : [b.hardline, "else ", b.indent(if_false)],
-    ]);
-  }
-  // only add an "end" if we're the outermost if
-  if (keyword == "if") parts.push(b.hardline, "end");
-  return parts;
-};
+export interface GenericIf {
+  cond: Node;
+  if_true: Node | null;
+  if_false: Node | null;
+  keyword_l?: Loc;
+}
 
-export default printIf;
+export const makePrintIf: (line: Doc) => NodePrinter<GenericIf> =
+  (line) => (path, options, print) => {
+    const node = path.getValue();
+    const parts: Doc[] = [];
+    let keyword = "";
+    if (node.keyword_l) {
+      keyword = sourceFromLocation(options, node.keyword_l);
+    } else {
+      // a ternary that's converted to multiline if may end up here
+      keyword = "if";
+    }
+    parts.push(
+      b.group([
+        keyword,
+        " ",
+        path.call(print, "cond"),
+        b.ifBreak([b.line, "then"]),
+      ])
+    );
+
+    let primaryBody: Doc = "";
+    let primaryNode: Node | null = null;
+    let secondaryBody: Doc = "";
+    let secondaryNode: Node | null = null;
+    if (keyword.endsWith("if")) {
+      primaryBody = path.call(print, "if_true");
+      primaryNode = node.if_true;
+      secondaryBody = path.call(print, "if_false");
+      secondaryNode = node.if_false;
+    } else {
+      primaryBody = path.call(print, "if_false");
+      primaryNode = node.if_false;
+      secondaryBody = path.call(print, "if_true");
+      secondaryNode = node.if_true;
+    }
+    if (primaryNode) {
+      parts.push(b.indent([line, primaryBody]));
+    }
+    if (secondaryNode) {
+      parts.push(
+        secondaryNode instanceof nodes.If
+          ? [line, secondaryBody]
+          : [b.line, "else", b.indent([b.line, secondaryBody])]
+      );
+    }
+    if (keyword == "if" || keyword == "unless") {
+      // only add an "end" if we're the outermost if/unless
+      parts.push(line, "end");
+    }
+    return parts;
+  };
+
+export default makePrintIf(b.hardline);

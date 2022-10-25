@@ -1,6 +1,6 @@
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
-import { NodePrinter, parentsWithImplicitSymbolChildren } from "../";
+import { NodePrinter, parentsWithImplicitSymbolChildren } from "../printer";
 const { builders: b } = doc;
 
 const printPair: NodePrinter<nodes.Pair> = (path, options, print) => {
@@ -12,11 +12,9 @@ const printPair: NodePrinter<nodes.Pair> = (path, options, print) => {
   } else {
     separator = " => ";
   }
-  return b.group([
-    path.call(print, "key"),
-    separator,
-    path.call(print, "value"),
-  ]);
+  const key = path.call(print, "key");
+  parentsWithImplicitSymbolChildren.delete(node);
+  return [key, separator, path.call(print, "value")];
 };
 
 export default printPair;

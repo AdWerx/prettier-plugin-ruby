@@ -1,0 +1,11 @@
+volumes:
+  modules:
+
+services:
+  app:
+    build: .
+    entrypoint: ""
+    command: sleep infinity
+    volumes:
+      - .:/app
+      - modules:/app/node_modules

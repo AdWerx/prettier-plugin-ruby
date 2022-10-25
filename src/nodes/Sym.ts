@@ -1,6 +1,6 @@
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
-import { NodePrinter, parentsWithImplicitSymbolChildren } from "../";
+import { NodePrinter, parentsWithImplicitSymbolChildren } from "../printer";
 const { builders: b } = doc;
 
 const printSym: NodePrinter<nodes.Sym> = (path, options, print) => {

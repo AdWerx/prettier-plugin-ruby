@@ -1,10 +1,7 @@
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
-import {
-  NodePrinter,
-  parentsWithImplicitStringChildren,
-  sourceFromLocation,
-} from "../";
+import { sourceFromLocation } from "../diagnostics";
+import { NodePrinter, parentsWithImplicitStringChildren } from "../printer";
 const { builders: b } = doc;
 
 const printXstr: NodePrinter<nodes.Xstr> = (path, options, print) => {

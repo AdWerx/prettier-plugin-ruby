@@ -1,6 +1,6 @@
 import { nodes } from "lib-ruby-parser";
 import { Doc, doc } from "prettier";
-import { NodePrinter } from "../";
+import { NodePrinter } from "../printer";
 const { builders: b } = doc;
 
 const printDefined: NodePrinter<nodes.Defined> = (path, options, print) => {

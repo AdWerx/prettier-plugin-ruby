@@ -1,6 +1,6 @@
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
-import { NodePrinter } from "../";
+import { NodePrinter } from "../printer";
 const { builders: b } = doc;
 
 const printDef: NodePrinter<nodes.Def> = (path, options, print) => {
@@ -15,7 +15,7 @@ const printDef: NodePrinter<nodes.Def> = (path, options, print) => {
   } else {
     return b.group([
       b.group([preamble]),
-      node.body ? b.indent([b.hardline, body]) : ";",
+      node.body ? b.indent([b.hardline, body]) : b.ifBreak("", ";"),
       b.line,
       "end",
     ]);

@@ -1,6 +1,6 @@
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
-import { NodePrinter } from "../";
+import { NodePrinter } from "../printer";
 const { builders: b } = doc;
 
 const printInPattern: NodePrinter<nodes.InPattern> = (path, options, print) => {
@@ -9,7 +9,9 @@ const printInPattern: NodePrinter<nodes.InPattern> = (path, options, print) => {
     "in ",
     path.call(print, "pattern"),
     node.guard ? [" ", path.call(print, "guard")] : "",
-    b.indent([b.line, b.ifBreak("", ["then "]), path.call(print, "body")]),
+    node.body
+      ? b.indent([b.line, b.ifBreak("", ["then "]), path.call(print, "body")])
+      : "",
   ]);
 };
 

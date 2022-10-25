@@ -1,6 +1,6 @@
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
-import { NodePrinter } from "../";
+import { NodePrinter } from "../printer";
 const { builders: b } = doc;
 
 const printOpAsgn: NodePrinter<nodes.OpAsgn> = (path, options, print) => {
@@ -9,8 +9,8 @@ const printOpAsgn: NodePrinter<nodes.OpAsgn> = (path, options, print) => {
     path.call(print, "recv"),
     " ",
     node.operator,
-    "=",
-    b.indent([b.line, path.call(print, "value")]),
+    "= ",
+    path.call(print, "value"),
   ]);
 };
 

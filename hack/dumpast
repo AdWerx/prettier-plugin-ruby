@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+
+const { parse } = require("lib-ruby-parser");
+const { inspect } = require("util");
+const fs = require("fs");
+
+const result = parse(
+  fs.readFileSync(process.argv[2], "utf-8"),
+  "(eval)",
+  (_, b) => b
+);
+
+result.diagnostics.forEach((diag) =>
+  console.error(`${diag.level.toUpperCase()}: ${inspect(diag.message)}`)
+);
+
+console.log(inspect(result.ast, { colors: true, depth: null }));

@@ -3,13 +3,13 @@
   "main": "index.ts",
   "scripts": {
     "build": "tsc",
-    "try": "build && prettier --plugin ./build samples/",
+    "format": "npm run build && prettier --plugin ./build",
     "watch": "tsc --watch",
     "test": "jest",
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "lib-ruby-parser": "file:../node-bindings/pkg",
+    "lib-ruby-parser": "file:./node-bindings/pkg",
     "prettier": "^2.7.1"
   },
   "devDependencies": {
@@ -20,5 +20,21 @@
     "ts-jest": "^29.0.3",
     "ts-node": "^10.9.1",
     "typescript": "^4.8.4"
+  },
+  "prettierz": {
+    "plugins": [
+      "/app/build"
+    ],
+    "overrides": [
+      {
+        "files": "*.rb",
+        "options": {
+          "parser": "ruby"
+        },
+        "excludeFiles": [
+          "src/"
+        ]
+      }
+    ]
   }
 }

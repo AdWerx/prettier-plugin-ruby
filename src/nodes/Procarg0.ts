@@ -1,6 +1,7 @@
-import { nodes } from "lib-ruby-parser";
+import { Loc, nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
-import { NodePrinter } from "../";
+import { NodePrinter } from "../printer";
+import { sourceFromLocation } from "../diagnostics";
 const { builders: b } = doc;
 
 const printProcarg0: NodePrinter<nodes.Procarg0> = (path, options, print) => {

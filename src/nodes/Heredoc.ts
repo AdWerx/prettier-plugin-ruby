@@ -1,10 +1,7 @@
 import { nodes } from "lib-ruby-parser";
-import { doc } from "prettier";
-import {
-  NodePrinter,
-  printedHeredocEndLocations,
-  sourceFromLocation,
-} from "../";
+import { Doc, doc } from "prettier";
+import { sourceFromLocation } from "../diagnostics";
+import { NodePrinter, printedHeredocEndLocations } from "../printer";
 const { builders: b } = doc;
 
 const printHeredoc: NodePrinter<nodes.Heredoc> = (path, options, print) => {
@@ -30,9 +27,21 @@ const printHeredoc: NodePrinter<nodes.Heredoc> = (path, options, print) => {
     }
   }
   const body = sourceFromLocation(options, { begin, end });
+  let trailer: Doc = "";
+  const trailerCharacters = sourceFromLocation(options, {
+    begin: end,
+    end: end + 2,
+  });
+  if (trailerCharacters == "\n\n") {
+    trailer = [b.hardline];
+  }
 
   printedHeredocEndLocations.push(node.heredoc_end_l);
-  return [opener, b.lineSuffix([b.literallineWithoutBreakParent, body])];
+  return [
+    opener,
+    b.lineSuffix([b.literallineWithoutBreakParent, body]),
+    trailer,
+  ];
 };
 
 export default printHeredoc;

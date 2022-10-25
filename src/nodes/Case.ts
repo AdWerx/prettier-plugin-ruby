@@ -1,6 +1,6 @@
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
-import { NodePrinter } from "../";
+import { NodePrinter } from "../printer";
 const { builders: b } = doc;
 
 const printCase: NodePrinter<nodes.Case> = (path, options, print) => {
@@ -10,7 +10,7 @@ const printCase: NodePrinter<nodes.Case> = (path, options, print) => {
     path.call(print, "expr"),
     b.hardline,
     b.join(b.hardline, path.map(print, "when_bodies")),
-    node.expression_l
+    node.else_body
       ? [
           b.hardline,
           b.group(["else", b.indent([b.line, path.call(print, "else_body")])]),

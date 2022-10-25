@@ -1,14 +1,21 @@
-<!-- gen:mayoverwrite -->
 # ConstPattern Formatting
 
-## Fails because no tests are written
+Const pattern used in pattern matching (e.g. `in A(1, 2)`)
+
+## Formats
 
 Before:
+
 ```ruby
-foo
+case foo
+in SQUARE(1, 2) then nil
+end
 ```
 
 After:
+
 ```ruby
-bar
+case foo
+in SQUARE(1, 2) then nil
+end
 ```

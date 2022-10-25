@@ -1,6 +1,6 @@
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
-import { NodePrinter } from "../";
+import { NodePrinter } from "../printer";
 const { builders: b } = doc;
 
 const printRescueBody: NodePrinter<nodes.RescueBody> = (
@@ -11,14 +11,11 @@ const printRescueBody: NodePrinter<nodes.RescueBody> = (
   const node = path.getValue();
   return [
     b.group([
-      b.dedent([
-        b.hardline,
-        "rescue",
-        node.exc_list ? [" ", b.group(path.call(print, "exc_list"))] : "",
-        node.exc_var ? [" => ", path.call(print, "exc_var")] : "",
-      ]),
+      "rescue",
+      node.exc_list ? [" ", b.group(path.call(print, "exc_list"))] : "",
+      node.exc_var ? [" => ", path.call(print, "exc_var")] : "",
+      node.body ? b.indent([b.line, path.call(print, "body")]) : "",
     ]),
-    node.body ? [b.hardline, path.call(print, "body")] : "",
   ];
 };
 

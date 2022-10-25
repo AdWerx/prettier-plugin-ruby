@@ -1,6 +1,7 @@
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
-import { NodePrinter, sourceFromLocation } from "../";
+import { NodePrinter } from "../printer";
+import { sourceFromLocation } from "../diagnostics";
 const { builders: b } = doc;
 
 const printOptarg: NodePrinter<nodes.Optarg> = (path, options, print) => {

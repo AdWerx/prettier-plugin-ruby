@@ -1,15 +1,15 @@
 // gen:mayoverwrite
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
-import { NodePrinter } from "../";
+import { NodePrinter } from "../printer";
 const { builders: b } = doc;
 
 const printPostexe: NodePrinter<nodes.Postexe> = (path, options, print) => {
+  const node = path.getValue();
   return b.group([
     "END ",
     "{",
-    b.indent([b.line, path.call(print, "body")]),
-    b.line,
+    node.body ? [b.indent([b.line, path.call(print, "body")]), b.line] : "",
     "}",
   ]);
 };

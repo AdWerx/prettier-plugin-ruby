@@ -1,0 +1,18 @@
+{
+  "name": "prettier-plugin-rb-rs",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/app",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "files.trimFinalNewlines": true,
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+      },
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
+    }
+  }
+}

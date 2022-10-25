@@ -3,6 +3,7 @@ import path from "path";
 import prettier from "prettier";
 import { readFileSync } from "fs";
 import { marked } from "marked";
+import { name } from "./parser";
 import * as plugin from "./";
 
 export type TestCase = {
@@ -28,7 +29,7 @@ type Token = {
 };
 
 export const formatOptions: prettier.Options = {
-  parser: plugin.RUBY,
+  parser: name,
   printWidth: 80,
   plugins: [plugin],
 };
@@ -41,7 +42,14 @@ export const runNodeFixtureTests = (name: string) => {
       const formatted = prettier.format(before, formatOptions);
       expect(formatted).toBe(after);
       const formattedAgain = prettier.format(formatted, formatOptions);
-      expect(formattedAgain).toBe(formatted);
+      try {
+        expect(formattedAgain).toBe(formatted);
+      } catch (e) {
+        (e as Error).message =
+          (e as Error).message +
+          "\n\n‼️failed to produce same output after second formatting pass";
+        throw e;
+      }
     });
   });
 };

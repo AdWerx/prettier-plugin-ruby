@@ -4,7 +4,7 @@ import {
   NodePrinter,
   parentsWithImplicitStringChildren,
   parentsWithImplicitSymbolChildren,
-} from "../";
+} from "../printer";
 const { builders: b } = doc;
 
 const printArray: NodePrinter<nodes.Array> = (path, options, print) => {
