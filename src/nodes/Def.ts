@@ -14,7 +14,7 @@ const printDef: NodePrinter<nodes.Def> = (path, options, print) => {
     return [preamble, " = ", body];
   } else {
     return b.group([
-      b.group([preamble]),
+      ...preamble,
       node.body ? b.indent([b.hardline, body]) : b.ifBreak("", ";"),
       b.line,
       "end",

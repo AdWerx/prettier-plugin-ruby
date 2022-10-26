@@ -12,13 +12,11 @@ const printRescue: NodePrinter<nodes.Rescue> = (path, options, print) => {
   const else_ = path.call(print, "else_");
   // its a modifier when the neither the parent nor body are begins
   if (
-    !(node.body instanceof nodes.Begin) &&
-    !(node.body instanceof nodes.KwBegin) &&
-    !(parent instanceof nodes.Begin) &&
-    !(parent instanceof nodes.KwBegin)
+    parent instanceof nodes.Def ||
+    parent instanceof nodes.KwBegin ||
+    parent instanceof nodes.Block ||
+    parent instanceof nodes.Ensure
   ) {
-    return [body, " ", rescueBodies, node.else_l ? [" ", else_] : ""];
-  } else {
     return [
       body,
       b.dedent([b.hardline, b.join(b.hardline, rescueBodies)]),
@@ -30,6 +28,11 @@ const printRescue: NodePrinter<nodes.Rescue> = (path, options, print) => {
           ]
         : "",
     ];
+  } else if (node.rescue_bodies.length == 1) {
+    // rescue modifier
+    return [body, " ", b.group(path.call(print, "rescue_bodies", 0))];
+  } else {
+    throw new Error("unexpected rescue format—refusing to continue.");
   }
 };
 

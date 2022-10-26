@@ -160,3 +160,25 @@ After:
 ```ruby
 1 / 0 rescue nil
 ```
+
+## Formats rescuing a block
+
+Before:
+
+```ruby
+[1].each do |i|
+  puts i / 0
+rescue StandardError => e
+  puts e
+end
+```
+
+After:
+
+```ruby
+[1].each do |i|
+  puts i / 0
+rescue StandardError => e
+  puts e
+end
+```

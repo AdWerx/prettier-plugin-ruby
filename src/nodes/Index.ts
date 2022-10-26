@@ -4,7 +4,7 @@ import { NodePrinter } from "../printer";
 const { builders: b } = doc;
 
 const printIndex: NodePrinter<nodes.Index> = (path, options, print) => {
-  return b.group([
+  return [
     path.call(print, "recv"),
     // its not pretty when the brackets break so we wrap them a second time
     // to isolate them from the receiver breaker, which is probably most often
@@ -15,7 +15,7 @@ const printIndex: NodePrinter<nodes.Index> = (path, options, print) => {
       b.softline,
       "]",
     ]),
-  ]);
+  ];
 };
 
 export default printIndex;

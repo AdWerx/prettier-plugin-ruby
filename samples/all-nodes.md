@@ -252,10 +252,10 @@ class A::B < ::C
 
     a &&= b
     a & b
-    a && b
+    a and b
     a ||= b
     a || b
-    a || b
+    a or b
 
     case foo
     in [1, [2], 3,] then true

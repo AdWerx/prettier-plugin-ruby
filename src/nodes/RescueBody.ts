@@ -10,12 +10,10 @@ const printRescueBody: NodePrinter<nodes.RescueBody> = (
 ) => {
   const node = path.getValue();
   return [
-    b.group([
-      "rescue",
-      node.exc_list ? [" ", b.group(path.call(print, "exc_list"))] : "",
-      node.exc_var ? [" => ", path.call(print, "exc_var")] : "",
-      node.body ? b.indent([b.line, path.call(print, "body")]) : "",
-    ]),
+    "rescue",
+    node.exc_list ? [" ", b.group(path.call(print, "exc_list"))] : "",
+    node.exc_var ? [" => ", path.call(print, "exc_var")] : "",
+    node.body ? b.indent([b.line, path.call(print, "body")]) : "",
   ];
 };
 
