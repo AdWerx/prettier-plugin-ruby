@@ -1,5 +1,6 @@
 import { nodes, Node, Loc, ParserResult, Comment } from "lib-ruby-parser";
 import { Printer, doc, Doc, AstPath } from "prettier";
+import { sourceFromLocation } from "./diagnostics";
 import { CommentWithValue, RubyParserOptions } from "./parser";
 
 export type NodePrinter<T> = (
@@ -33,6 +34,8 @@ export const printer: Printer<ParserResult | Node | CommentWithValue | null> = {
     if (!node) return "";
     if (node instanceof ParserResult) {
       return path.call(print, "ast");
+    } else if (node instanceof Loc) {
+      return sourceFromLocation(options, node);
     }
 
     const type = node.constructor.name;

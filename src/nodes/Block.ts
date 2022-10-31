@@ -4,56 +4,81 @@ import { sourceFromLocation } from "../diagnostics";
 import { NodePrinter } from "../printer";
 const { builders: b } = doc;
 
-const printBlock: NodePrinter<nodes.Block> = (path, options, print) => {
-  const node = path.getValue();
-  const parent = path.getParentNode();
-  const isLambda = node.call instanceof nodes.Lambda;
-  let args: Doc = "";
-  if (node.args instanceof nodes.Args && node.args.args.length) {
-    args = [isLambda ? "" : " ", path.call(print, "args")];
-  }
-  const hasIntentionalBreak = sourceFromLocation(
-    options,
-    node.expression_l
-  ).includes("\n");
+const makeBlockPrinter = ({
+  delegateToSendCall,
+  shouldBreak = false,
+}: {
+  delegateToSendCall: boolean;
+  shouldBreak?: boolean;
+}): NodePrinter<nodes.Block> => {
+  return (path, options, print) => {
+    const node = path.getValue();
 
-  const callId = Symbol("call");
+    if (node.call instanceof nodes.Send && delegateToSendCall) {
+      return path.call(print, "call");
+    }
 
-  if (parent instanceof nodes.Send) {
-    // when this block is in a send chain, we try to keep the send+block on
-    // the same line and let the "call" break first, so it cannot be grouped
-    return [
-      path.call(print, "call"),
-      isLambda ? args : "",
-      " ",
-      b.indent(
-        b.group([
-          b.ifBreak("do", "{"),
-          !isLambda ? args : "",
-          b.indent([b.line, path.call(print, "body")]),
-          b.line,
-          b.ifBreak("end", "}"),
-        ])
-      ),
-    ];
-  } else {
-    return [
-      b.group(path.call(print, "call"), { id: callId }),
-      isLambda ? args : "",
-      " ",
-      b.group([
-        b.ifBreak("do", "{"),
-        !isLambda ? args : "",
-        node.body
-          ? b.indentIfBreak(
-              [b.indent([b.line, path.call(print, "body")]), b.line],
-              { groupId: callId }
-            )
-          : "",
-        b.ifBreak("end", "}"),
-      ]),
-    ];
-  }
+    const hasExistingBreak = sourceFromLocation(
+      options,
+      node.expression_l
+    ).includes("\n");
+    let body: Doc = "";
+    const open = b.ifBreak("do", "{");
+    const end = b.ifBreak("end", "}");
+
+    const args = path.call(print, "args");
+
+    if (node.body) {
+      body = [b.indent([b.line, path.call(print, "body")]), b.line];
+    }
+
+    if (node.call instanceof nodes.Lambda) {
+      return [
+        path.call(print, "call"),
+        args ? [args, " "] : " ",
+        b.group([open, body, end], {
+          shouldBreak: shouldBreak || hasExistingBreak,
+        }),
+      ];
+
+      // const callId = Symbol("call");
+      // body = body ? b.indentIfBreak(body, { groupId: callId }) : body;
+      // parts.push([
+      //   b.group(path.call(print, "call"), { id: callId }),
+      //   " ",
+      //   b.group([open, args ? [" ", args] : "", body, end]),
+      // ]);
+    } else {
+      return [open, args ? [" ", args] : "", body, end];
+    }
+
+    //   return [
+    //     b.group(path.call(print, "call"), { id: callId }),
+    //     isLambda ? args : "",
+    //     " ",
+    //     b.group([
+    //       b.ifBreak("do", "{"),
+    //       !isLambda ? args : "",
+    //       node.body
+    //         ? b.indentIfBreak(
+    //             [b.indent([b.line, path.call(print, "body")]), b.line],
+    //             { groupId: callId }
+    //           )
+    //         : "",
+    //       b.ifBreak("end", "}"),
+    //     ]),
+    //   ];
+    // }
+  };
 };
+
+export const printBlock = makeBlockPrinter({ delegateToSendCall: true });
+export const printBlockWithoutCall = makeBlockPrinter({
+  delegateToSendCall: false,
+});
+export const printBrokenBlockWithoutCall = makeBlockPrinter({
+  delegateToSendCall: false,
+  shouldBreak: true,
+});
 
 export default printBlock;

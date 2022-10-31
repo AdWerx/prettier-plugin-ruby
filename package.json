@@ -1,5 +1,5 @@
 {
-  "name": "prettier-plugin-rb",
+  "name": "@adwerx/prettier-plugin-ruby",
   "main": "index.ts",
   "scripts": {
     "build": "tsc",
@@ -9,6 +9,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "debug": "^4.3.4",
     "lib-ruby-parser": "file:./node-bindings/pkg",
     "prettier": "^2.7.1"
   },

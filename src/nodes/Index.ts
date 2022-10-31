@@ -9,12 +9,17 @@ const printIndex: NodePrinter<nodes.Index> = (path, options, print) => {
     // its not pretty when the brackets break so we wrap them a second time
     // to isolate them from the receiver breaker, which is probably most often
     // breakable in a much prettier way
-    b.group([
-      "[",
-      b.indent([b.softline, b.join([",", b.line], path.map(print, "indexes"))]),
-      b.softline,
-      "]",
-    ]),
+    b.group(
+      b.ifBreak(
+        [
+          "[",
+          b.indent([b.line, b.join([",", b.line], path.map(print, "indexes"))]),
+          b.line,
+          "]",
+        ],
+        ["[", b.join([",", " "], path.map(print, "indexes")), "]"]
+      )
+    ),
   ];
 };
 

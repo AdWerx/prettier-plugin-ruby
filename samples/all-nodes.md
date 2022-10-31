@@ -161,6 +161,7 @@ class A::B < ::C
         (a, b) = [c, d]
 
         if /foo/
+          true
         end
 
         /(?<match>bar)/ =~ 'bar'
@@ -318,7 +319,7 @@ class A::B < ::C
       next 42
       redo
       retry
-      super foo
+      super(foo)
       super
     end
 
@@ -368,6 +369,7 @@ class A::B < ::C
     (a, b) = [c, d]
 
     if /foo/
+      true
     end
 
     /(?<match>bar)/ =~ "bar"

@@ -89,9 +89,46 @@ After:
 
 ```ruby
 cascades.each_pair do |source_key, destinations|
-  source_value = source_key.split(":").inject(config) do |memo, part|
-    memo.try(:[], part)
-  end
+  source_value = source_key
+    .split(":")
+    .inject(config) { |memo, part| memo.try(:[], part) }
   next unless source_value.present?
+end
+```
+
+## Does not split on block arguments
+
+Before:
+
+```ruby
+class Thing
+  def add_default
+    [].each do
+      if true
+        ad_config[code][color_config[:config_field]] ||=
+          components.detect { |c| c["code"] == code }["settings"][
+            color_config[:config_field]
+          ] rescue color_config[:default_color]
+      end
+    end
+  end
+end
+```
+
+After:
+
+```ruby
+class Thing
+  def add_default
+    [].each do
+      if true
+        ad_config[code][color_config[:config_field]] ||= components
+          .detect do |c|
+            c["code"] == code
+          end["settings"][color_config[:config_field]] rescue
+            color_config[:default_color]
+      end
+    end
+  end
 end
 ```
