@@ -505,7 +505,8 @@ HERE
 After:
 
 ```ruby
-<<~HERE # foo
+# foo
+<<~HERE
   foo
 HERE
 ```
@@ -523,7 +524,8 @@ HERE
 After:
 
 ```ruby
-list << <<~HERE # foo
+# foo
+list << <<~HERE
   foo
 HERE
 ```
@@ -652,7 +654,7 @@ def dump_commands
     <<~SHELL.squish,
       sed -E 's/CREATE TABLE (`[^`]+`)/TRUNCATE TABLE \\1; CREATE TABLE IF NOT EXISTS \\1/g'
     SHELL
-    "mysql #{mysql_opts} -v #{local_db_config['database']}",
+    "mysql #{mysql_opts} -v #{local_db_config["database"]}",
     "grep 'INSERT INTO `'"
   ]
 end

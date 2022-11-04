@@ -11,7 +11,7 @@ const printDefs: NodePrinter<nodes.Defs> = (path, options, print) => {
 
   if (node.assignment_l) {
     // endless method def
-    return [preamble, " = ", body];
+    return ["def ", "self.", node.name, args || "()", " = ", body];
   } else {
     return b.group([
       b.group([preamble]),

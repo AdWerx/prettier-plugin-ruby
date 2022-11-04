@@ -6,6 +6,7 @@ import {
   CommentKind,
   Node,
   ParserResult,
+  nodes,
 } from "lib-ruby-parser";
 import { ParserOptions } from "prettier";
 import { printDiagnostics, sourceFromLocation } from "./diagnostics";
@@ -16,17 +17,24 @@ export const astFormat = "lib-ruby-parser";
 
 export interface RubyParserOptions<T> extends ParserOptions<T> {
   magicComments?: MagicComment[];
+  formatNumbers: boolean;
+  trailingDot: boolean;
 }
 
-export interface PossiblyLocatedNode extends Node {
-  expression_l?: Loc;
+export interface LocatedNode extends Node {
+  expression_l: Loc;
 }
+
+export interface PossiblyLocatedNode extends Partial<LocatedNode> {}
 
 export class CommentWithValue extends Comment {
   value: string;
   placement?: string;
   trailing?: boolean;
   leading?: boolean;
+  encodingNode?: Node;
+  precedingNode?: Node;
+  followingNode?: Node;
   constructor(loc: Loc, kind: CommentKind, value: string) {
     super(loc, kind);
     this.value = value;
@@ -34,7 +42,7 @@ export class CommentWithValue extends Comment {
 }
 
 export const parser = {
-  parse(text: string, parsers: {}, options: RubyParserOptions<ParserResult>) {
+  parse(text: string, parsers: {}, options: ParserOptions<ParserResult>) {
     const result = parse(text, options.filepath || "(eval)", (_, b) => b);
     const originalText = new TextDecoder().decode(result.input.bytes);
 

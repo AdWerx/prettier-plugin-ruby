@@ -25,26 +25,6 @@ send(to: "you@email.com", from: "me@email.com")
 Before:
 
 ```ruby
-send(
-  to: "you@email.com",
-  from: "me@email.com"
-)
-```
-
-After:
-
-```ruby
-send(
-  to: "you@email.com",
-  from: "me@email.com"
-)
-```
-
-## Preserves newlines when authored
-
-Before:
-
-```ruby
 SomeInterestingNamespace::FindThingsRelevantToMyJob.run!(
   context: self,
   check_for_limitations: false

@@ -89,8 +89,8 @@ a_configuration_object_variable_that_cannot_be_broken.default_address = "localho
 After:
 
 ```ruby
-a_configuration_object_variable_that_cannot_be_broken.default_address =
-  "localhost"
+a_configuration_object_variable_that_cannot_be_broken
+  .default_address = "localhost"
 ```
 
 ## When printing a setter that is part of a chain and the first arg is a hash, the setter method is not broken from the receiver
@@ -116,9 +116,25 @@ a_configuration_object_variable_that_cannot_be_broken.default_address = {
 Before:
 
 ```ruby
-a_configuration_object_variable_that_cannot_be_broken.default_address = %w(
-  contents_of_the_array
-)
+a_configuration_object_variable_that_cannot_be_broken.default_address = %w(contents_of_the_array)
+```
+
+After:
+
+```ruby
+a_configuration_object_variable_that_cannot_be_broken
+  .default_address = %w(contents_of_the_array)
+```
+
+## When printing a setter that is part of a chain and the first arg is an array, the setter method is not broken from the receiver (force break)
+
+Before:
+
+```ruby
+a_configuration_object_variable_that_cannot_be_broken
+  .default_address = %w(
+    contents_of_the_array
+  )
 ```
 
 After:
@@ -186,7 +202,11 @@ a_configuration_object_variable_that_cannot_be_broken.default_address = {
 Before:
 
 ```ruby
-self.worker_connection_configuration.metrics_server.statsd.default_address = "localhost"
+self
+  .worker_connection_configuration
+  .metrics_server
+  .statsd
+  .default_address = "localhost"
 ```
 
 After:
@@ -304,9 +324,7 @@ Before:
 %w(
   something_in_this_array_causing_it_to_always_appear_multi-line
   something_else
-).includes?("nothing")
-  .without("nothing")
-  .compact
+).includes?("nothing").without("nothing").compact
 ```
 
 After:
@@ -407,6 +425,33 @@ begin
 end
 ```
 
+## chain 3 (forced newline)
+
+Before:
+
+```ruby
+begin
+  def self.categories
+    self
+      .types.map { |class_name| class_name.constantize.category }
+      .some_other_long_method 'arg'
+  end
+end
+```
+
+After:
+
+```ruby
+begin
+  def self.categories
+    self
+      .types
+      .map { |class_name| class_name.constantize.category }
+      .some_other_long_method "arg"
+  end
+end
+```
+
 ## chain 4
 
 Before:
@@ -429,41 +474,6 @@ After:
 
     default_text = defaults_hash[:text]
   end
-```
-
-<!-- ## Formats
-
-## Breaks a block when the sends don't chain well
-
-Before:
-
-```ruby
-begin
-  def self.categories
-    self.types.map { |class_name| class_name.constantize.category } << :auto_listings_why_does_this
-    self.very_long_method_name.map { |class_name| class_name.constantize.category } << :a
-    self.types.map { |class_name| class_name.constantize.category }.some_other_long_method 'arg'
-  end
-end
-```
-
-After:
-
-```ruby
-begin
-  def self.categories
-    self.types.map do |class_name|
-      class_name.constantize.category
-    end << :auto_listings_why_does_this
-    self
-      .very_long_method_name
-      .map { |class_name| class_name.constantize.category } << :a
-    self
-      .types
-      .map { |class_name| class_name.constantize.category }
-      .some_other_long_method "arg"
-  end
-end
 ```
 
 Before:
@@ -591,6 +601,23 @@ self.telemetry.tracked_data = { things_to_count_and_summarize: (metrics || []).l
 After:
 
 ```ruby
+self
+  .telemetry
+  .tracked_data = { things_to_count_and_summarize: (metrics || []).length }
+```
+
+## Formats a chained assignment (forced break)
+
+Before:
+
+```ruby
+self.telemetry.tracked_data = {
+  things_to_count_and_summarize: (metrics || []).length }
+```
+
+After:
+
+```ruby
 self.telemetry.tracked_data = {
   things_to_count_and_summarize: (metrics || []).length
 }
@@ -616,8 +643,8 @@ Before:
 
 ```ruby
 def product_for_preview_image_type(preview_image_type)
-  products.detect do |campaign_product|
-    campaign_product.default_ad_preview_image_type.to_s == preview_image_type.to_s
+  products.detect do |selected_product|
+    selected_product.default_ad_preview_image_type.to_s == preview_image_type.to_s
   end
 end
 ```
@@ -626,8 +653,8 @@ After:
 
 ```ruby
 def product_for_preview_image_type(preview_image_type)
-  products.detect do |campaign_product|
-    campaign_product.default_ad_preview_image_type.to_s == preview_image_type
+  products.detect do |selected_product|
+    selected_product.default_ad_preview_image_type.to_s == preview_image_type
       .to_s
   end
 end
@@ -659,11 +686,8 @@ return false if field_name.blank? || (!validate_draft_fields.is_a?(Hash) && !val
 After:
 
 ```ruby
-if field_name.blank? ||
+return false if field_name.blank? ||
   (!validate_draft_fields.is_a?(Hash) && !validate_draft_fields.is_a?(Array))
-then
-  return false
-end
 ```
 
 ## Formats when a chain breaks a line and part of the chain is the `==` method
@@ -681,12 +705,13 @@ using_default_text =
 After:
 
 ```ruby
-using_default_text = ::Hashtronaut
-  .simple_fetch(
-    self.ad_config.try(:with_indifferent_access) || {},
-    "#{component_code}.text"
-  )
-  .to_s == default_text
+using_default_text =
+  ::Hashtronaut
+    .simple_fetch(
+      self.ad_config.try(:with_indifferent_access) || {},
+      "#{component_code}.text"
+    )
+    .to_s == default_text
 ```
 
 ## Fits blocks in a chain onto the line when the chain breaks
@@ -1114,12 +1139,8 @@ After:
 
 ```ruby
 product_specs_of(categories: categories)
-  .map do |clazz, _specs|
-    clazz.try(:name) || clazz.try(:to_s)
-  end
-  .each do |b|
-    b + 1
-  end
+  .map { |clazz, _specs| clazz.try(:name) || clazz.try(:to_s) }
+  .each { |b| b + 1 }
 ```
 
 ## Preserves an arg and a block starting on the same line if the author formatted it as such
@@ -1202,4 +1223,48 @@ if true
     end
   end
 end
-``` -->
+```
+
+## Ex3
+
+Before:
+
+```ruby
+class Thing
+  module Thing
+    def something
+      if true
+        add_proc(
+          -> do
+            where("#{Transaction.table_name}.bit_flags & #{Transaction.bit_mask(:coupon_not_reusable)} = 0")
+              .order("#{Coupon.table_name}.code ASC")
+          end
+        )
+      end
+    end
+  end
+end
+```
+
+After:
+
+```ruby
+class Thing
+  module Thing
+    def something
+      if true
+        add_proc(
+          -> do
+            where(
+              "#{Transaction.table_name}.bit_flags & #{
+                Transaction.bit_mask(:coupon_not_reusable)
+              } = 0"
+            )
+              .order("#{Coupon.table_name}.code ASC")
+          end
+        )
+      end
+    end
+  end
+end
+```

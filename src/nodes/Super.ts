@@ -16,9 +16,16 @@ const printSuper: NodePrinter<nodes.Super> = (path, options, print) => {
   }
   return b.group([
     "super",
-    b.ifBreak("(", node.args.length ? parens[0] : ""),
-    b.indent([b.softline, b.join([",", b.line], path.map(print, "args"))]),
-    b.softline,
+    b.ifBreak("(", parens[0]),
+    node.args.length
+      ? [
+          b.indent([
+            b.softline,
+            b.join([",", b.line], path.map(print, "args")),
+          ]),
+          b.softline,
+        ]
+      : "",
     b.ifBreak(")", parens[1]),
   ]);
 };

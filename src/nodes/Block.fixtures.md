@@ -89,9 +89,9 @@ After:
 
 ```ruby
 cascades.each_pair do |source_key, destinations|
-  source_value = source_key
-    .split(":")
-    .inject(config) { |memo, part| memo.try(:[], part) }
+  source_value = source_key.split(":").inject(config) do |memo, part|
+    memo.try(:[], part)
+  end
   next unless source_value.present?
 end
 ```
@@ -122,11 +122,13 @@ class Thing
   def add_default
     [].each do
       if true
-        ad_config[code][color_config[:config_field]] ||= components
-          .detect do |c|
+        ad_config[code][color_config[:config_field]] ||= begin
+          components.detect do |c|
             c["code"] == code
-          end["settings"][color_config[:config_field]] rescue
-            color_config[:default_color]
+          end["settings"][color_config[:config_field]]
+        rescue
+          color_config[:default_color]
+        end
       end
     end
   end

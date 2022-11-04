@@ -120,3 +120,16 @@ export const parseExamples = (tokens: Token[]): TestCase[] => {
   }
   return allExamples;
 };
+
+export const testSample = (name: string) => {
+  test(`Sample: ${name}`, () => {
+    const formatted = prettier.format(
+      readFileSync(
+        path.join(path.resolve(__dirname, "../samples", name))
+      ).toString(),
+      formatOptions
+    );
+    expect(formatted).toMatchInlineSnapshot();
+    expect(prettier.format(formatted, formatOptions)).toBe(formatted);
+  });
+};

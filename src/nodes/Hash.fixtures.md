@@ -20,12 +20,12 @@ After:
 { one: 2, three: 4 }
 ```
 
-## Preserves newlines when authored
+## When its the value of an local var assignment, breaks are preserved as authored
 
 Before:
 
 ```ruby
-{
+h = {
   one: 2,
   three: 4
 }
@@ -34,7 +34,47 @@ Before:
 After:
 
 ```ruby
-{
+h = {
+  one: 2,
+  three: 4
+}
+```
+
+## When its the value of an index assignment, breaks are preserved as authored
+
+Before:
+
+```ruby
+h[0] = {
+  one: 2,
+  three: 4
+}
+```
+
+After:
+
+```ruby
+h[0] = {
+  one: 2,
+  three: 4
+}
+```
+
+## When its an argument of a setter, breaks are preserved as authored
+
+Before:
+
+```ruby
+h[0] = {
+  one: 2,
+  three: 4
+}
+```
+
+After:
+
+```ruby
+h[0] = {
   one: 2,
   three: 4
 }

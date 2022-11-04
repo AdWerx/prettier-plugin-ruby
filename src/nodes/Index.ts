@@ -1,26 +1,31 @@
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
 import { NodePrinter } from "../printer";
+import { canBreakIndex } from "../queries";
 const { builders: b } = doc;
 
 const printIndex: NodePrinter<nodes.Index> = (path, options, print) => {
-  return [
-    path.call(print, "recv"),
-    // its not pretty when the brackets break so we wrap them a second time
-    // to isolate them from the receiver breaker, which is probably most often
-    // breakable in a much prettier way
-    b.group(
-      b.ifBreak(
-        [
-          "[",
-          b.indent([b.line, b.join([",", b.line], path.map(print, "indexes"))]),
-          b.line,
-          "]",
-        ],
-        ["[", b.join([",", " "], path.map(print, "indexes")), "]"]
-      )
-    ),
-  ];
+  if (canBreakIndex(path)) {
+    return b.group([
+      path.call(print, "recv"),
+      b.group([
+        "[",
+        b.indent([
+          b.softline,
+          b.join([",", b.line], path.map(print, "indexes")),
+        ]),
+        b.softline,
+        "]",
+      ]),
+    ]);
+  } else {
+    return b.group([
+      path.call(print, "recv"),
+      "[",
+      b.join(", ", path.map(print, "indexes")),
+      "]",
+    ]);
+  }
 };
 
 export default printIndex;

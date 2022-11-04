@@ -5,13 +5,14 @@ import {
   parentsWithImplicitStringChildren,
   parentsWithImplicitSymbolChildren,
 } from "../printer";
+import { primitiveShouldBreak } from "../queries";
 const { builders: b } = doc;
 
 const printArray: NodePrinter<nodes.Array> = (path, options, print) => {
   const node = path.getValue();
+  const parent = path.getParentNode();
   let brackets: [string, string] = ["", ""];
   let delimiter = ",";
-
   // array modifiers don't have their own node type, but we can collect the
   // from the original text
   if (node.begin_l && node.end_l) {
@@ -32,15 +33,18 @@ const printArray: NodePrinter<nodes.Array> = (path, options, print) => {
     parentsWithImplicitStringChildren.set(node, node);
   }
 
-  return b.group([
-    brackets[0],
-    b.indent([
+  return b.group(
+    [
+      brackets[0],
+      b.indent([
+        b.softline,
+        b.join([delimiter, b.line], path.map(print, "elements")),
+      ]),
       b.softline,
-      b.join([delimiter, b.line], path.map(print, "elements")),
-    ]),
-    b.softline,
-    brackets[1],
-  ]);
+      brackets[1],
+    ],
+    { shouldBreak: primitiveShouldBreak(path, options) }
+  );
 };
 
 export default printArray;

@@ -74,7 +74,7 @@ After:
 
 ```ruby
 def const_missing(*)
-  super 1, 2
+  super(1, 2)
 end
 ```
 

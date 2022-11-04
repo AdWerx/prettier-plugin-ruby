@@ -1,18 +1,22 @@
 import { Node, nodes } from "lib-ruby-parser";
-import { AstPath, Doc, doc, format } from "prettier";
-import { sourceFromLocation } from "../diagnostics";
+import { AstPath, Doc, doc } from "prettier";
+import { PossiblyLocatedNode } from "../parser";
 import { NodePrinter } from "../printer";
 import {
+  canBreak,
+  hasBlock,
   isArray,
   isBegin,
   isBlock,
   isCSend,
   isHash,
   isKwargs,
+  isLvar,
   isSend,
-  receiverIsWrapped,
+  locationIsImmediatelyFollowedByNewline,
+  willBreakExcludingHeredocs,
 } from "../queries";
-import { printBlockWithoutCall, printBrokenBlockWithoutCall } from "./Block";
+import { getBlockDocs, printBlockWithoutCall } from "./Block";
 const { builders: b } = doc;
 
 const unaryOperators = ["~", "-@", "+@"];
@@ -20,6 +24,8 @@ const operatorMethods = [
   "&",
   "|",
   "^",
+  "!=",
+  "!==",
   "==",
   "===",
   ">",
@@ -32,300 +38,288 @@ const operatorMethods = [
   "=~",
   "|=",
   "^=",
+  "+",
+  "-",
+  "%",
+  "*",
+  "/",
 ];
 const exponentiation = "**";
 const negation = "!";
 
-// const printSendLinear: NodePrinter<nodes.Send> = (path, options, print) => {
-//   const parent = node.getParentNode();
-//   const grandParent = node.getParentNode(1);
-//   let printedNodes = [];
-//   const unwrap = (path) => {
-//     const node = path.getValue();
-//   };
+interface BlockWithSend extends nodes.Block {
+  call: nodes.Send;
+}
 
-//   return "";
-// };
+type Member = {
+  node: PossiblyLocatedNode;
+  printed: Doc;
+  block?: Doc;
+  expandedBlock?: Doc;
+  args?: Doc;
+  expandedArgs?: Doc;
+  dot?: Doc;
+};
 
-// const unwrap = (path: AstPath<Node | null>) => {
-//   if (isSend(node) || isCSend(node)) {
-//     return [node, ...unwrap(node.recv)];
-//   } else if (isBlock(node) && isSend(node.call)) {
-//     return [];
-//   } else {
-//     return [];
-//   }
-// };
+const printSendLinear: NodePrinter<nodes.Send> = (path, options, print) => {
+  const node = path.getValue();
+  const { method_name: methodName, args } = node;
+  const selector = path.call(print, "selector_l");
+  const operator = path.call(print, "operator_l");
+  const printableMethodName = [selector, operator]
+    .filter((itself) => itself)
+    .join(" ");
+  const parent = path.getParentNode();
 
-export const makeSendPrinter = (dot = "."): NodePrinter<nodes.Send> => {
-  return (path, options, print) => {
+  // phase 1, linearize the send chain in Member tuples
+
+  const members: Member[] = [];
+  const visit = (path: AstPath<Node | null>) => {
     const node = path.getValue();
-    const { args, method_name } = node;
-    const parent = path.getParentNode();
-    const grandparent = path.getParentNode(1);
-    const receiver = path.call(print, "recv");
-    const selector = path.call(print, "selector_l");
-    const operator = path.call(print, "operator_l");
+    if (!node) {
+      return "";
+    }
+    if (isSend(node) || isCSend(node)) {
+      const sendPath = path as AstPath<nodes.Send>;
+      members.unshift({
+        node,
+        printed: [sendPath.call(print, "dot_l"), node.method_name],
+        args: printArgs(sendPath, options, print),
+        expandedArgs: printExpandedArgs(sendPath, options, print),
+      });
+      sendPath.call(visit, "recv");
+    } else if (isBlock(node) && (isSend(node.call) || isCSend(node.call))) {
+      const blockPath = path as AstPath<BlockWithSend>;
+      members.unshift({
+        node,
+        printed: [
+          blockPath.call(print, "call", "dot_l"),
+          node.call.method_name,
+          blockPath.call((p) => printArgs(p, options, print), "call"),
+          " ",
+          b.group(printBlockWithoutCall(blockPath, options, print)),
+        ],
+      });
+      blockPath.call(visit, "call", "recv");
+    } else {
+      members.unshift({
+        node,
+        printed: print(path),
+      });
+    }
+  };
+
+  let block: Doc = "";
+  let expandedBlock: Doc = "";
+
+  if (hasBlock(path)) {
+    let { open, args, body, end } = path.callParent((p) =>
+      getBlockDocs(p as unknown as AstPath<nodes.Block>, options, print)
+    );
+    block = b.group([" ", open, args ? [" ", args] : "", body, end]);
+    expandedBlock = b.group([" ", open, args ? [" ", args] : "", body, end], {
+      shouldBreak: true,
+    });
+  }
+
+  // Print non-chaining sends or linearize the send chain into an array.
+  // All chains are made up of Send nodes, but not all Send nodes are chainable
+  // for the simpler types of sends (===, !, unary, etc) we can just return the
+  // printed form here
+  if (!node.recv) {
+    // simple method call with implicit receiver
+    return [printableMethodName, printArgs(path, options, print), block];
+  } else if (methodName === negation) {
+    // !{something}
+    return [negation, path.call(print, "recv")];
+  } else if (methodName === exponentiation) {
+    // 2**8
+    return [
+      path.call(print, "recv"),
+      exponentiation,
+      path.call(print, "args", 0),
+    ];
+  } else if (unaryOperators.includes(methodName) && selector) {
+    // unary method ~2
+    return [selector, path.call(print, "recv")];
+  } else if (operatorMethods.includes(methodName) && selector) {
+    // method like >=
+    // the >= should be grouped to its receiver
+    return [
+      path.call(print, "recv"),
+      " ",
+      printableMethodName,
+      printArgs(path, options, print),
+    ];
+  }
+
+  // last method call in the chain or a recv+dot+send by itself (no chain)
+  members.unshift({
+    node,
+    printed: [path.call(print, "dot_l"), printableMethodName],
+    args: printArgs(path, options, print),
+    expandedArgs: printExpandedArgs(path, options, print),
+    block,
+    expandedBlock,
+  });
+
+  if (node.recv) {
+    // recursively prepend to the chain
+    path.call(visit, "recv");
+  }
+
+  const printIndentedMembers = (members: Member[]): Doc => {
+    if (members.length === 0) return "";
+
+    return b.indent(
+      b.group([b.hardline, b.join(b.hardline, members.map(printMember))])
+    );
+  };
+
+  const printMember = (member: Member): Doc => [
+    member.printed,
+    member.args || "",
+    member.block || "",
+  ];
+
+  const firstMemberIsMagnetic = (members: Member[]): boolean => {
+    if (members.length >= 1) {
+      const firstNode = members[0].node;
+      return (
+        !locationIsImmediatelyFollowedByNewline(
+          options,
+          firstNode.expression_l
+        ) &&
+        ((isSend(firstNode) && isShort(firstNode.method_name)) ||
+          (isCSend(firstNode) && isShort(firstNode.method_name)) ||
+          (isLvar(firstNode) && isShort(firstNode.name)) ||
+          isArray(firstNode) ||
+          isHash(firstNode) ||
+          isBegin(firstNode))
+      );
+    }
+    return false;
+  };
+
+  const isShort = (name: string) => {
+    return name.length < options.tabWidth;
+  };
+
+  const bigBlockCount = members.filter(
+    ({ node }) => isBlock(node) && node.body && isBegin(node.body)
+  ).length;
+  const keepFirstTwoMembersJoined =
+    members.length >= 2 && firstMemberIsMagnetic(members);
+  const printedGroups = members.map(printMember);
+  const oneLine = printedGroups;
+
+  // if (members.length < 2) {
+  //   return b.group(oneLine);
+  // }
+
+  const expandedCandidates: Doc[] = [];
+  const lastMember = members[members.length - 1];
+
+  // construct some partially expanded documents of the send chain in order to
+  // fit idiomatically on a single line with only _some_ expanded content
+  // an example is a line with a block at the end:
+  //   some.method_chain_that_exceeds_print_width.each do |item|
+  //     ...
+  //   end
+  if (hasBlock(path)) {
+    // when there's a block at the end of the chain, the expanded format is
+    // to break the block and see if the chain fits
+    expandedCandidates.push([
+      b.group([members.slice(0, -1).map(printMember), lastMember.printed]),
+      lastMember.args || "",
+      lastMember.expandedBlock || "",
+    ]);
+  } else if (
+    args.length > 0 &&
+    !(path.stack as any).some((name: any) => name === "cond")
+  ) {
+    // else when args can break well, the next best expanded format is to break args,
+    // and see if it fits
+    // an example is a line with breakable args at the end:
+    //   some.method_chain_that_exceeds_print_width.new(
+    //     "this is an error message or something"
+    //   )
+    expandedCandidates.push([
+      b.group([members.slice(0, -1).map(printMember), lastMember.printed]),
+      lastMember.expandedArgs || "",
+    ]);
+  }
+
+  const fullyExpanded = [
+    printMember(members[0]),
+    keepFirstTwoMembersJoined ? members.slice(1, 2).map(printMember) : "",
+    printIndentedMembers(members.slice(keepFirstTwoMembersJoined ? 2 : 1)),
+  ];
+
+  expandedCandidates.push(fullyExpanded);
+
+  let finalDoc: Doc;
+  // conditions in which we prevent oneline printing altogether
+  // - the chain has one or more blocks with multiple statements
+  if (bigBlockCount >= 1) {
+    finalDoc = b.group(fullyExpanded);
+  } else {
+    // try oneline, if it breaks, break the parent and try again,
+    // else try expandedCandidates and ultimately use the most expandable
+    finalDoc = [
+      willBreakExcludingHeredocs(oneLine) ? b.breakParent : "",
+      b.conditionalGroup([oneLine, ...expandedCandidates]),
+    ];
+  }
+
+  return b.label("send-chain", finalDoc);
+};
+
+const makeArgPrinter =
+  (
+    { shouldBreak } = { shouldBreak: false }
+  ): NodePrinter<nodes.Send | nodes.CSend> =>
+  (path, options, print) => {
+    const node = path.getValue();
+    const { args } = node;
+
+    if (!args?.length) {
+      return "";
+    }
+
     const argBegin = path.call(print, "begin_l");
     const argEnd = path.call(print, "end_l");
-    const dot = path.call(print, "dot_l");
     const printedArgs = path.map(print, "args");
-    const amCallOfParentBlock = isBlock(parent) && path.getName() === "call";
-    const hasBlock = amCallOfParentBlock;
-    const hasArgs = args.length > 0;
-    const topOfChain =
-      !isSend(parent) &&
-      !isCSend(parent) &&
-      isSend(node.recv) &&
-      isSend(node.recv.recv);
-    let formattedBlock: Doc = "";
-    let brokenBlock: Doc = "";
-    let formattedArgs: Doc = "";
-    let brokenArgs: Doc = "";
 
-    let amPartOfChain =
-      (parent &&
-        dot &&
-        (isSend(parent) || isCSend(parent)) &&
-        !parent.args.includes(node) &&
-        parent.dot_l) ||
-      (amCallOfParentBlock && isSend(grandparent) && grandparent.dot_l);
-
-    if (hasArgs) {
-      if (!argBegin && args.length == 1 && !isKwargs(args[0])) {
-        // no parens, one arg, we want the arg to start on the same line
-        formattedArgs = brokenArgs = [" ", ...printedArgs];
-      } else if (
-        !argBegin &&
-        args.length == 2 &&
-        isBlock(args[1]) &&
-        args[1].body
-      ) {
-        // preserves formatting like
-        // scope :active, -> do
-        //   where()
-        // end
-        formattedArgs = brokenArgs = [
-          " ",
-          printedArgs[0],
-          ", ",
-          printedArgs[1],
-        ];
-      } else {
-        // other
-        let shouldBreak = false;
-        const beginLoc = node.begin_l || node.selector_l;
-        if (beginLoc) {
-          shouldBreak =
-            sourceFromLocation(options, {
-              begin: beginLoc.end,
-              end: node.expression_l.end,
-            }).includes("\n") && args.length > 1;
-        }
-        formattedArgs = b.group([
+    if (!argBegin && args.length == 1 && !isKwargs(args[0])) {
+      // no parens, one arg, we want the arg to start on the same line
+      return [" ", ...printedArgs];
+    } else if (
+      !argBegin &&
+      args.length == 2 &&
+      isBlock(args[1]) &&
+      args[1].body
+    ) {
+      // preserves formatting like
+      // scope :active, -> do
+      //   where()
+      // end
+      return [" ", printedArgs[0], ", ", printedArgs[1]];
+    } else {
+      // other
+      return b.group(
+        [
           b.ifBreak("(", argBegin || " "),
           b.indent([b.softline, b.join([",", b.line], printedArgs)]),
           b.softline,
           b.ifBreak(")", argEnd),
-        ]);
-        brokenArgs = b.group(
-          [
-            b.ifBreak("(", argBegin || " "),
-            b.indent([b.softline, b.join([",", b.line], printedArgs)]),
-            b.softline,
-            b.ifBreak(")", argEnd),
-          ],
-          { shouldBreak: true }
-        );
-      }
-    }
-
-    if (hasBlock) {
-      formattedBlock = [
-        " ",
-        path.callParent((ppath) =>
-          printBlockWithoutCall(
-            ppath as unknown as AstPath<nodes.Block>,
-            options,
-            print
-          )
-        ),
-      ];
-      brokenBlock = [
-        " ",
-        path.callParent((ppath) =>
-          printBrokenBlockWithoutCall(
-            ppath as unknown as AstPath<nodes.Block>,
-            options,
-            print
-          )
-        ),
-      ];
-    }
-    const formattedArgsAndBlock = b.group([formattedArgs, formattedBlock]);
-    const dotMethod = [dot || " ", selector, operator ? [" ", operator] : ""];
-
-    if (!receiver) {
-      // simple method call with implicit receiver
-      return [method_name, formattedArgsAndBlock];
-    } else if (method_name === negation) {
-      // !{something}
-      return [negation, b.group(receiver)];
-    } else if (method_name === exponentiation) {
-      // 2**8
-      return [receiver, exponentiation, ...printedArgs];
-    } else if (unaryOperators.includes(method_name) && selector) {
-      // unary method 1 & 2
-      return [selector, receiver];
-    } else if (operatorMethods.includes(method_name) && selector) {
-      // method like >=
-      // the >= should be grouped to its receiver
-      return [b.group(receiver), " ", method_name, " ", ...printedArgs];
-    } else if (operator && topOfChain) {
-      // it's a setter
-      // we're at the top of a chain, breaking after the `=` is not preferable
-      // because chains are best broken uniformly
-      return [receiver, b.indent([b.softline, dotMethod, " ", ...printedArgs])];
-    } else if (
-      operator &&
-      (isArray(args[0]) || isHash(args[0]) || isBegin(args[0]))
-    ) {
-      // it's a setter
-      // there's no chain, and the arg[0] can break
-      const id = Symbol("recvdotequals");
-      return [
-        b.group([receiver, b.indent([b.softline, dotMethod])], { id }),
-        " ",
-        b.indentIfBreak(printedArgs, { groupId: id }),
-      ];
-    } else if (operator) {
-      // it's a setter
-      // there is no chain, we allow a line to break after the `=`
-      return b.group([receiver, dotMethod, b.indent([b.line, ...printedArgs])]);
-    } else if (
-      receiverIsWrapped(path, options) ||
-      isArray(node.recv) ||
-      isHash(node.recv)
-    ) {
-      // objects which have wrappers look better when the method is
-      // chained right onto the end wrapper of the recv because
-      // the end wrappers are typically not indented to where the method
-      // will be
-      return [b.group(receiver), dotMethod, formattedArgsAndBlock];
-    } else if (amPartOfChain) {
-      // when this send is part of a chain, we don't create a new group
-      return [
-        [receiver, b.indent([b.softline, dotMethod, formattedArgsAndBlock])],
-      ];
-      // } else if (hasBlock) {
-      //   const id = Symbol("recv");
-      //   return [
-      //     b.group([receiver, dotMethod, formattedArgs], { id }),
-      //     b.indentIfBreak(formattedBlock, { groupId: id }),
-      //   ];
-    } else if (hasBlock) {
-      const id = Symbol("recvdotmethodargs");
-      const open = b.ifBreak("do", "{");
-      const end = b.ifBreak("end", "}");
-      const blockArgs = path.callParent(() =>
-        (path as unknown as AstPath<nodes.Block>).call(print, "args")
+        ],
+        { shouldBreak }
       );
-      const body = path.callParent(() =>
-        (path as unknown as AstPath<nodes.Block>).call(print, "body")
-      );
-      return [
-        b.group([receiver, b.indent([b.softline, dotMethod])], { id }),
-        b.indentIfBreak(printedArgs, { groupId: id }),
-        b.group(
-          b.indentIfBreak(
-            [
-              " ",
-              open,
-              blockArgs ? [" ", blockArgs] : "",
-              parent.body ? [b.indent([b.line, body]), b.line] : "",
-              end,
-            ],
-            { groupId: id }
-          )
-        ),
-      ];
-      // } else if (args.length) {
-      //   return b.group([
-      //     b.group([receiver, b.indent([b.softline, dotMethod, formattedArgs])]),
-      //   ]);
-    } else {
-      // top of chain
-      // return [
-      //   b.group([receiver], { id }),
-      //   b.group([
-      //     b.indent([b.softline, dotMethod, formattedArgs]),
-      //     b.indentIfBreak(formattedBlock, { groupId: id }),
-      //   ]),
-      // ];
-      const id = Symbol("recv");
-      // return b.conditionalGroup([
-      //   // fits on one line
-      //   [receiver, dotMethod, formattedArgs],
-      //   [receiver, dotMethod, brokenArgs],
-      //   // [
-      //   //   b.group([receiver, b.indent([b.softline, dotMethod])], { id }),
-      //   //   b.indentIfBreak([formattedArgs], { groupId: id }),
-      //   // ],
-      //   // fits when args of the top send are broken
-      //   // [
-      //   //   b.group([receiver, b.indent([b.softline, dotMethod])], { id }),
-      //   //   b.indentIfBreak([brokenArgs], { groupId: id }),
-      //   // ],
-      //   // [receiver, b.indent([b.softline, dotMethod, formattedArgs])],
-      //   // [
-      //   //   b.group([receiver, b.indent([b.softline, dotMethod])]),
-      //   //   brokenArgs,
-      //   //   formattedBlock,
-      //   // ],
-      //   //   [
-      //   //     b.group([receiver, b.indent([b.softline, dotMethod])]),
-      //   //     brokenArgs,
-      //   //     brokenBlock,
-      //   //   ],
-      //   //   [receiver, b.indent([b.softline, dotMethod, formattedArgs])],
-      //   //   // [receiver, b.softline, dotMethod, brokenArgs, brokenBlock],
-      //   //   // [
-      //   //   //   receiver,
-      //   //   //   b.indent([b.softline, dotMethod, formattedArgs, formattedBlock]),
-      //   //   // ],
-      //   [receiver, b.indent([b.softline, dotMethod, formattedArgs])],
-      // ]);
-
-      return b.group([
-        receiver,
-        b.indent([b.softline, dotMethod, formattedArgs]),
-      ]);
-      // top of a send chain
-      // return b.conditionalGroup([
-      //   // fits on one line
-      //   [receiver, dotMethod, formattedArgs, formattedBlock],
-      //   // fits when the outermost block breaks
-      //   [receiver, b.softline, dotMethod, formattedArgs, brokenBlock],
-      //   // fits when args of the top send are broken
-      //   [receiver, b.softline, dotMethod, brokenArgs, formattedBlock],
-
-      //   [receiver, b.softline, dotMethod, brokenArgs, brokenBlock],
-      //   [
-      //     receiver,
-      //     b.indent([b.softline, dotMethod, formattedArgs, formattedBlock]),
-      //   ],
-      // ]);
-      // END: CHAINING
-      // } else {
-      //   // we are chained to some recv, but it's not a send
-      //   return b.group([
-      //     receiver,
-      //     b.indent([b.softline, dotMethod, formattedArgsAndBlock]),
-      //   ]);
     }
   };
-};
 
-const printSend = makeSendPrinter(".");
+const printArgs = makeArgPrinter();
+const printExpandedArgs = makeArgPrinter({ shouldBreak: true });
 
-export default printSend;
+export default printSendLinear;

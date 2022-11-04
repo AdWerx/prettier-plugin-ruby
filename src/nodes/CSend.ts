@@ -1,7 +1,7 @@
 import { doc } from "prettier";
-import { makeSendPrinter } from "./Send";
+import printSendLinear from "./Send";
 const { builders: b } = doc;
 
-const printCSend = makeSendPrinter("&.");
+const printCSend = printSendLinear;
 
 export default printCSend;

@@ -1,8 +1,9 @@
 import { nodes } from "lib-ruby-parser";
 import { Doc, doc } from "prettier";
 import { sourceFromLocation } from "../diagnostics";
-import { PossiblyLocatedNode } from "../parser";
+import { LocatedNode, PossiblyLocatedNode } from "../parser";
 import { NodePrinter } from "../printer";
+import { beginShouldBreak } from "../queries";
 const { builders: b } = doc;
 
 const printBegin: NodePrinter<nodes.Begin> = (path, options, print) => {
@@ -23,27 +24,32 @@ const printBegin: NodePrinter<nodes.Begin> = (path, options, print) => {
   }
 
   const statements = path.map((path, i, value) => {
-    const snode = path.getValue() as PossiblyLocatedNode;
+    const snode = path.getValue() as LocatedNode;
     let trailer: Doc[] = [];
     if (snode.expression_l && i !== value.length - 1) {
+      trailer.push(b.hardline);
       const trailingCharacters = sourceFromLocation(options, {
         begin: snode.expression_l.end,
         end: snode.expression_l.end + 2,
       });
-      if (["\n", "#"].includes(trailingCharacters[0])) trailer.push(b.hardline);
-      if (["\n", "#"].includes(trailingCharacters[1])) trailer.push(b.hardline);
+      if (trailingCharacters[1] === "\n") {
+        trailer.push(b.hardline);
+      }
     }
     return [path.call(print), trailer];
   }, "statements");
 
-  return b.group([
-    openCloseTokens[0],
-    opportunityToBreak
-      ? b.indent([opportunityToBreak, ...statements])
-      : statements,
-    opportunityToBreak,
-    openCloseTokens[1],
-  ]);
+  return b.group(
+    [
+      openCloseTokens[0],
+      opportunityToBreak
+        ? b.indent([opportunityToBreak, statements])
+        : statements,
+      opportunityToBreak,
+      openCloseTokens[1],
+    ],
+    { shouldBreak: beginShouldBreak(path, options) }
+  );
 };
 
 export default printBegin;

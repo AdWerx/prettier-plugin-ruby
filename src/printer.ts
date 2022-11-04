@@ -1,7 +1,8 @@
 import { nodes, Node, Loc, ParserResult, Comment } from "lib-ruby-parser";
-import { Printer, doc, Doc, AstPath } from "prettier";
+import { Printer, Doc, AstPath, util } from "prettier";
 import { sourceFromLocation } from "./diagnostics";
 import { CommentWithValue, RubyParserOptions } from "./parser";
+import { isHeredoc, isSend } from "./queries";
 
 export type NodePrinter<T> = (
   path: AstPath<T>,
@@ -30,7 +31,6 @@ Object.keys(nodes).forEach((name) => {
 export const printer: Printer<ParserResult | Node | CommentWithValue | null> = {
   print(path, options: RubyParserOptions<Node | null>, print) {
     let node = path.getValue();
-    // guard against nulls since we all those to be printed
     if (!node) return "";
     if (node instanceof ParserResult) {
       return path.call(print, "ast");
@@ -43,28 +43,14 @@ export const printer: Printer<ParserResult | Node | CommentWithValue | null> = {
       throw new Error(`unrecognized node type: ${type}`);
     }
     const printed = nodePrinters[type].call(null, path, options, print);
-    // console.log(require("util").inspect(printed, { depth: null }));
+
     return printed;
   },
   printComment(path, options) {
-    const node = path.getValue();
-    if (!(node instanceof CommentWithValue)) return "";
-    // if (node.placement == "remaining" && node.leading) {
-    //   // CommentWithValue {
-    //   //   loc: Loc { begin: 1914, end: 1932 },
-    //   //   kind: 'inline',
-    //   //   value: '# note: inclusive\n',
-    //   //   placement: 'remaining',
-    //   //   leading: true,
-    //   //   trailing: false,
-    //   //   printed: true,
-    //   //   nodeDescription: '(unknown type)'
-    //   // }
-    //   return [" ", node.value.trim()];
-    // } else if (node.placement == "endOfLine" && node.leading) {
-    //   return [node.value.trim(), doc.builders.hardline];
-    // }
-    return node.value.trim();
+    const comment = path.getValue() as CommentWithValue;
+    if (comment.placement === "ownLine" || comment.placement === "remaining")
+      return comment.value.trim();
+    return comment.value;
   },
   // @TODO
   // insertPragma(text: string): string {
@@ -76,22 +62,27 @@ export const printer: Printer<ParserResult | Node | CommentWithValue | null> = {
   canAttachComment(node) {
     return node instanceof Node;
   },
-  // // isBlockComment,
-  // // printComment,
-  // handleComments: {
-  //   // ownLine(comment, text) {
-  //   //   console.log(comment);
-  //   //   return false;
-  //   // },
-  //   endOfLine(comment, text, options) {
-  //     console.log(comment);
-  //     return false;
-  //   },
-  //   // remaining(comment, text) {
-  //   //   console.log(comment);
-  //   //   return false;
-  //   // },
-  // },
+  handleComments: {
+    remaining(comment, text, options) {
+      const { precedingNode } = comment;
+      if (
+        (isHeredoc(precedingNode) || isSend(precedingNode)) &&
+        !sourceFromLocation(
+          { originalText: text },
+          {
+            begin: precedingNode.expression_l.end,
+            end: comment.loc.begin,
+          }
+        ).includes("\n")
+      ) {
+        // comment trails a block, technically inside the block, but the comment
+        // pertains to the send. It should be moved out of the block
+        util.addLeadingComment(precedingNode, comment);
+        return true;
+      }
+      return false;
+    },
+  },
 };
 
 export default printer;

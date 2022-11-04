@@ -1,29 +1,25 @@
 import { nodes } from "lib-ruby-parser";
 import { Doc, doc } from "prettier";
 import { NodePrinter } from "../printer";
+import { assignmentRhsShouldBreak } from "../queries";
 const { builders: b } = doc;
 
 const printLvasgn: NodePrinter<nodes.Lvasgn> = (path, options, print) => {
   const node = path.getValue();
   const parent = path.getParentNode();
-  let assignOperator: Doc = [" ", "="];
+  let operator: Doc = " =";
   if (!node.operator_l) {
-    assignOperator = "";
+    operator = "";
   }
-
+  // will not have a value if its part of an OpAsgn or Mlhs
   const value = path.call(print, "value");
   let valueDoc: Doc;
-  // if (node.value instanceof nodes.If) {
-  //   valueDoc = b.indent([b.line, value]);
-  // } else {
-  //   valueDoc = [" ", value];
-  // }
-  return b.group([
-    node.name,
-    assignOperator,
-    // will not have a value if its part of an OpAsgn or Mlhs
-    node.value ? [" ", value] : "",
-  ]);
+  if (assignmentRhsShouldBreak(value, path, options)) {
+    valueDoc = node.value ? [" ", value] : "";
+  } else {
+    valueDoc = node.value ? b.indent([b.line, value]) : "";
+  }
+  return b.group([node.name, operator, valueDoc]);
 };
 
 export default printLvasgn;
