@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "debug": "^4.3.4",
-    "lib-ruby-parser": "file:./node-bindings/pkg",
+    "lib-ruby-parser": "^4.0.3",
     "prettier": "^2.7.1"
   },
   "devDependencies": {
