@@ -10,6 +10,7 @@ export type TestCase = {
   title: string;
   before: string;
   after: string;
+  options: Record<keyof typeof plugin.options, any>;
 };
 
 enum ParserState {
@@ -38,10 +39,16 @@ export const runNodeFixtureTests = (name: string) => {
   describe(`${name} fixtures`, () => {
     test.each(
       loadFixtures(path.resolve(__dirname, `./nodes/${name}.fixtures.md`))
-    )("$title", ({ before, after }) => {
-      const formatted = prettier.format(before, formatOptions);
+    )("$title", ({ before, after, options }) => {
+      const formatted = prettier.format(before, {
+        ...formatOptions,
+        ...options,
+      });
       expect(formatted).toBe(after);
-      const formattedAgain = prettier.format(formatted, formatOptions);
+      const formattedAgain = prettier.format(formatted, {
+        ...formatOptions,
+        ...options,
+      });
       try {
         expect(formattedAgain).toBe(formatted);
       } catch (e) {
@@ -78,6 +85,8 @@ export const parseExamples = (tokens: Token[]): TestCase[] => {
         if (token.type == "code" && token.lang == "ruby") {
           testCase.before = token.text;
           parserState = ParserState.sawbefore;
+        } else if (token.type == "code" && token.lang == "json" && token.text) {
+          testCase.options = JSON.parse(token.text);
         }
         break;
       case ParserState.sawbefore:
@@ -88,6 +97,7 @@ export const parseExamples = (tokens: Token[]): TestCase[] => {
             title: "Untitled",
             before: "",
             after: "",
+            options: {},
             ...testCase,
           });
           testCase = {};
