@@ -3,5 +3,5 @@ module.exports = {
   preset: "ts-jest",
   testEnvironment: "node",
   testPathIgnorePatterns: ["node-bindings"],
-  rootDir: "src",
+  roots: ["test"],
 };

@@ -3,8 +3,8 @@ import path from "path";
 import prettier from "prettier";
 import { readFileSync } from "fs";
 import { marked } from "marked";
-import { name } from "./parser";
-import * as plugin from "./";
+import { name } from "../src/parser";
+import * as plugin from "../src";
 
 export type TestCase = {
   title: string;
@@ -121,15 +121,16 @@ export const parseExamples = (tokens: Token[]): TestCase[] => {
   return allExamples;
 };
 
-export const testSample = (name: string) => {
-  test(`Sample: ${name}`, () => {
+export const testSample = (testFile: string) => {
+  const rubyFile = testFile.replace(".test.ts", ".rb");
+  test(`Sample: ${rubyFile}`, () => {
     const formatted = prettier.format(
       readFileSync(
-        path.join(path.resolve(__dirname, "../samples", name))
+        path.join(path.resolve(__dirname, "samples", rubyFile))
       ).toString(),
       formatOptions
     );
-    expect(formatted).toMatchInlineSnapshot();
+    expect(formatted).toMatchSnapshot();
     expect(prettier.format(formatted, formatOptions)).toBe(formatted);
   });
 };
