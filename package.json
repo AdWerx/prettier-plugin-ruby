@@ -1,6 +1,7 @@
 {
   "name": "@adwerx/prettier-plugin-ruby",
   "main": "index.ts",
+  "version": "0.10.0",
   "scripts": {
     "build": "tsc",
     "format": "npm run build && prettier --plugin ./build",
