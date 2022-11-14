@@ -1,4 +1,5 @@
 import { Loc, ParserResult } from "lib-ruby-parser";
+import { TextDecoder } from "util";
 
 export const sourceFromLocation = (
   options: { originalText: string },

@@ -6,8 +6,8 @@ import {
   CommentKind,
   Node,
   ParserResult,
-  nodes,
 } from "lib-ruby-parser";
+import { TextDecoder } from "util";
 import { ParserOptions } from "prettier";
 import { printDiagnostics, sourceFromLocation } from "./diagnostics";
 import { printedHeredocEndLocations } from "./printer";

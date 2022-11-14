@@ -1,5 +1,6 @@
 import { nodes } from "lib-ruby-parser";
 import { doc } from "prettier";
+import { TextDecoder } from "util";
 import { parentsWithImplicitStringChildren } from "../printer";
 import { NodePrinter } from "../printer";
 const { builders: b } = doc;

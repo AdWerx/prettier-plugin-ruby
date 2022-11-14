@@ -1,5 +1,6 @@
 import { Loc, Node, nodes } from "lib-ruby-parser";
 import { AstPath, doc, Doc } from "prettier";
+import { TextDecoder } from "util";
 import { sourceFromLocation } from "./diagnostics";
 import { PossiblyLocatedNode, RubyParserOptions } from "./parser";
 const {

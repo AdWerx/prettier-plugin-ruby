@@ -1,6 +1,6 @@
 {
   "name": "@adwerx/prettier-plugin-ruby",
-  "version": "0.10.0",
+  "version": "0.10.4",
   "main": "build/index.js",
   "scripts": {
     "build": "tsc",
@@ -10,9 +10,10 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "debug": "^4.3.4",
-    "lib-ruby-parser": "^4.0.3",
-    "prettier": "^2.7.1"
+    "lib-ruby-parser": "^4.0.3"
+  },
+  "peerDependencies": {
+    "prettier": "^2.7"
   },
   "devDependencies": {
     "@jest/globals": "^29.1.2",
