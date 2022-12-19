@@ -33,3 +33,23 @@ After:
 ```ruby
 { "foo" => bar, baz: foo }
 ```
+
+## Retains quotes around a invalid ruby identifier
+
+Before:
+
+```ruby
+{
+  brand_logo: "logos/partners/#{code}.png",
+  "logos/homepage_tile": "logos/partners/#{code}.png"
+}
+```
+
+After:
+
+```ruby
+{
+  brand_logo: "logos/partners/#{code}.png",
+  "logos/homepage_tile": "logos/partners/#{code}.png"
+}
+```

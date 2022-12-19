@@ -63,3 +63,31 @@ After:
 ```ruby
 { sym: :a_value }
 ```
+
+## Quotes when quotes are needed
+
+Before:
+
+```ruby
+:"Something✅"
+```
+
+After:
+
+```ruby
+:"Something✅"
+```
+
+## Preserves escaped characters
+
+Before:
+
+```ruby
+:"Something\u{1F64B}"
+```
+
+After:
+
+```ruby
+:"Something\u{1F64B}"
+```

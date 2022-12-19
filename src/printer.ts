@@ -91,4 +91,11 @@ ${text}`;
   },
 };
 
+export const quote = (
+  options: { singleQuote: boolean },
+  text: string
+): string => {
+  return `"${text.replace(/"/, `\\"`)}"`;
+};
+
 export default printer;
