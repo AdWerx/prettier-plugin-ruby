@@ -69,8 +69,7 @@ export const printer: Printer<ParserResult | Node | CommentWithValue | null> = {
     return node instanceof Node;
   },
   insertPragma(text: string): string {
-    return `# @format
-${text}`;
+    return `# @format${text}`;
   },
   handleComments: {
     remaining(comment, text, options) {

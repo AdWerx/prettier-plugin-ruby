@@ -64,7 +64,6 @@ end`);
           insertPragma: true,
         });
         expect(formatted).toEqual(`# @format
-
 class Thing
   attr_reader :name
   def initialize(name)
