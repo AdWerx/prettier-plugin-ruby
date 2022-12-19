@@ -2,5 +2,4 @@ build/
 node_modules/
 coverage/
 tmp/
-node-bindings/
 .DS_Store

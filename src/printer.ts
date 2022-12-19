@@ -1,4 +1,10 @@
-import { nodes, Node, Loc, ParserResult, Comment } from "lib-ruby-parser";
+import {
+  nodes,
+  Node,
+  Loc,
+  ParserResult,
+  Comment,
+} from "@adwerx/lib-ruby-parser-wasm-bindings";
 import { Printer, Doc, AstPath, util } from "prettier";
 import { sourceFromLocation } from "./diagnostics";
 import { CommentWithValue, RubyParserOptions } from "./parser";

@@ -6,7 +6,7 @@ import {
   CommentKind,
   Node,
   ParserResult,
-} from "lib-ruby-parser";
+} from "@adwerx/lib-ruby-parser-wasm-bindings";
 import { TextDecoder } from "util";
 import { ParserOptions } from "prettier";
 import { printDiagnostics, sourceFromLocation } from "./diagnostics";

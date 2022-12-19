@@ -10,7 +10,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "lib-ruby-parser": "^4.0.3"
+    "@adwerx/lib-ruby-parser-wasm-bindings": "^0.1.0"
   },
   "peerDependencies": {
     "prettier": "^2.7"

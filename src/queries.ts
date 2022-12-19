@@ -1,4 +1,4 @@
-import { Loc, Node, nodes } from "lib-ruby-parser";
+import { Loc, Node, nodes } from "@adwerx/lib-ruby-parser-wasm-bindings";
 import { AstPath, doc, Doc } from "prettier";
 import { TextDecoder } from "util";
 import { sourceFromLocation } from "./diagnostics";

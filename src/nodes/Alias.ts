@@ -1,4 +1,4 @@
-import { nodes } from "lib-ruby-parser";
+import { nodes } from "@adwerx/lib-ruby-parser-wasm-bindings";
 import { doc } from "prettier";
 import { NodePrinter, parentsWithImplicitSymbolChildren } from "../printer";
 const { builders: b } = doc;

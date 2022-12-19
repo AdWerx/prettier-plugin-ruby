@@ -1,4 +1,4 @@
-import { nodes } from "lib-ruby-parser";
+import { nodes } from "@adwerx/lib-ruby-parser-wasm-bindings";
 import { doc } from "prettier";
 import { NodePrinter } from "../printer";
 import printLvasgn from "./Lvasgn";

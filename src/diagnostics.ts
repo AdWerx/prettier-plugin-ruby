@@ -1,4 +1,4 @@
-import { Loc, ParserResult } from "lib-ruby-parser";
+import { Loc, ParserResult } from "@adwerx/lib-ruby-parser-wasm-bindings";
 import { TextDecoder } from "util";
 
 export const sourceFromLocation = (

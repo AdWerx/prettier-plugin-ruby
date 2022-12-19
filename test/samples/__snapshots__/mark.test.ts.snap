@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Sample: /app/test/samples/mark.rb 1`] = `
+exports[`Sample: mark.rb 1`] = `
 "d = [
   30644250780,
   9003106878,

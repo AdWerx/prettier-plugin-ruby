@@ -123,7 +123,7 @@ export const parseExamples = (tokens: Token[]): TestCase[] => {
 
 export const testSample = (testFile: string) => {
   const rubyFile = testFile.replace(".test.ts", ".rb");
-  test(`Sample: ${rubyFile}`, () => {
+  test(`Sample: ${path.basename(rubyFile)}`, () => {
     const formatted = prettier.format(
       readFileSync(
         path.join(path.resolve(__dirname, "samples", rubyFile))

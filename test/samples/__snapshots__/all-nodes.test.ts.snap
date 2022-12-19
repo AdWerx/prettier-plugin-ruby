@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Sample: /app/test/samples/all-nodes.rb 1`] = `
+exports[`Sample: all-nodes.rb 1`] = `
 "# frozen_string_literal: true
 
 class A::B < ::C
@@ -52,6 +52,7 @@ class A::B < ::C
     in foo | bar then nil
     in **nil then nil
     in *foo then nil
+    else "zar"
     end
 
     case foo2
