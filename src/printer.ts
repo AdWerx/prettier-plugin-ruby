@@ -68,6 +68,10 @@ export const printer: Printer<ParserResult | Node | CommentWithValue | null> = {
   canAttachComment(node) {
     return node instanceof Node;
   },
+  insertPragma(text: string): string {
+    return `# @format
+${text}`;
+  },
   handleComments: {
     remaining(comment, text, options) {
       const { precedingNode } = comment;

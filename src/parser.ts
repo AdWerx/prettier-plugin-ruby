@@ -63,6 +63,9 @@ export const parser = {
     return result;
   },
   astFormat,
+  hasPragma(text: string): boolean {
+    return /^#\s@format$/m.test(text);
+  },
   locStart(node: PossiblyLocatedNode | Comment) {
     if (node instanceof Comment) {
       return node.loc.begin;
