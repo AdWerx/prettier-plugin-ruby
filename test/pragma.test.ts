@@ -51,7 +51,7 @@ end`);
   describe("pragma", () => {
     describe("insertPragma: true", () => {
       test("adds the pragma", () => {
-        const source = `
+        const source = `# frozen_string_literal: true
     class Thing
         attr_reader :name
           def initialize name
@@ -64,6 +64,7 @@ end`);
           insertPragma: true,
         });
         expect(formatted).toEqual(`# @format
+# frozen_string_literal: true
 class Thing
   attr_reader :name
   def initialize(name)

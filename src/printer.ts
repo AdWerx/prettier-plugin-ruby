@@ -58,10 +58,6 @@ export const printer: Printer<ParserResult | Node | CommentWithValue | null> = {
       return comment.value.trim();
     return comment.value;
   },
-  // @TODO
-  // insertPragma(text: string): string {
-  //   return "# @format";
-  // },
   isBlockComment(node) {
     return node instanceof Comment && node.kind == "document";
   },
@@ -69,7 +65,8 @@ export const printer: Printer<ParserResult | Node | CommentWithValue | null> = {
     return node instanceof Node;
   },
   insertPragma(text: string): string {
-    return `# @format${text}`;
+    return `# @format
+${text}`;
   },
   handleComments: {
     remaining(comment, text, options) {
