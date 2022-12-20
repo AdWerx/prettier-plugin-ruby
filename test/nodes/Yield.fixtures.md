@@ -20,6 +20,20 @@ After:
 yield 1
 ```
 
+## Preserves parens wrapping the arg
+
+Before:
+
+```ruby
+foo { yield(42) }
+```
+
+After:
+
+```ruby
+foo { yield(42) }
+```
+
 ## Formats with a guard
 
 Before:
@@ -46,4 +60,30 @@ After:
 
 ```ruby
 row ? yield : next
+```
+
+## Retains parens when the arg is a splat
+
+Before:
+
+```ruby
+def pluck(*attrs)
+  incoming.map do |payload|
+    values = payload.values_at(*attrs)
+    yield(*values) if block_given?
+    attrs.size > 1 ? values : values.first
+  end
+end
+```
+
+After:
+
+```ruby
+def pluck(*attrs)
+  incoming.map do |payload|
+    values = payload.values_at(*attrs)
+    yield(*values) if block_given?
+    attrs.size > 1 ? values : values.first
+  end
+end
 ```

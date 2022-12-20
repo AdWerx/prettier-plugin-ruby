@@ -13,7 +13,7 @@ const printArgs: NodePrinter<nodes.Args> = (path, options, print) => {
     node.args[0] instanceof nodes.Shadowarg ||
     (parent instanceof nodes.Block && !(parent.call instanceof nodes.Lambda))
   ) {
-    return ["|", b.join(", ", path.map(print, "args")), "|"];
+    return b.group(["|", b.join(", ", path.map(print, "args")), "|"]);
   }
   if (!node.args.length) {
     return "";

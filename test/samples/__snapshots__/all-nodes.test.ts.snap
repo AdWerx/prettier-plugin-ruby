@@ -79,7 +79,7 @@ class A::B < ::C
 
     proc { |;foo| foo }
     proc { |procarg| body }
-    proc { |procarg| body }
+    proc { |(procarg)| body }
 
     foo.bar(1, *baz, **baz, &baz)
     foo.bar = 42
@@ -96,7 +96,7 @@ class A::B < ::C
     foo do
       break 42
       return 42
-      yield 42
+      yield(42)
       next 42
       redo
       retry
