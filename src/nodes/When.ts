@@ -6,7 +6,10 @@ const { builders: b } = doc;
 const printWhen: NodePrinter<nodes.When> = (path, options, print) => {
   return b.group([
     "when ",
-    path.map(print, "patterns"),
+    b.group([
+      b.indent(b.join([",", b.line], path.map(print, "patterns"))),
+      b.ifBreak([b.line, "then"], ""),
+    ]),
     b.indent([b.line, b.ifBreak("", ["then "]), path.call(print, "body")]),
   ]);
 };

@@ -51,3 +51,50 @@ when Class
   end
 end
 ```
+
+## With multiple patterns retains the comma-separated list
+
+Before:
+
+```ruby
+case destination[:state]
+when "CA"
+  false
+when "HI", "NV"
+  true
+end
+```
+
+After:
+
+```ruby
+case destination[:state]
+when "CA" then false
+when "HI", "NV" then true
+end
+```
+
+## With multiple patterns forcing a line break
+
+Before:
+
+```ruby
+case destination[:state]
+when "CA"
+  false
+when "SomethingReallyLongLikeAFullyQualifiedConstantName", "SomethingReallyLongLikeAFullyQualifiedConstantName"
+  true
+end
+```
+
+After:
+
+```ruby
+case destination[:state]
+when "CA" then false
+when "SomethingReallyLongLikeAFullyQualifiedConstantName",
+  "SomethingReallyLongLikeAFullyQualifiedConstantName"
+then
+  true
+end
+```
