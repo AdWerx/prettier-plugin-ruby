@@ -1,13 +1,22 @@
 import { nodes } from "@adwerx/lib-ruby-parser-wasm-bindings";
 import { doc } from "prettier";
-import { NodePrinter } from "../printer";
+import { NodePrinter, NodeWithComments } from "../printer";
 const { builders: b } = doc;
 
-const printDef: NodePrinter<nodes.Def> = (path, options, print) => {
+const printDef: NodePrinter<nodes.Def & NodeWithComments> = (
+  path,
+  options,
+  print
+) => {
   const node = path.getValue();
   const body = path.call(print, "body");
   const args = path.call(print, "args");
   const preamble = ["def ", node.name, args];
+  const hasContents =
+    node.body ||
+    node.comments?.some(
+      (c) => !c.leading && !c.trailing && c.placement == "ownLine"
+    );
 
   if (node.assignment_l) {
     // endless method def
@@ -15,7 +24,7 @@ const printDef: NodePrinter<nodes.Def> = (path, options, print) => {
   } else {
     return b.group([
       ...preamble,
-      node.body ? b.indent([b.hardline, body]) : b.ifBreak("", ";"),
+      hasContents ? b.indent([b.hardline, body]) : b.ifBreak("", ";"),
       b.line,
       "end",
     ]);

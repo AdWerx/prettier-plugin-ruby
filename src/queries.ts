@@ -105,12 +105,14 @@ export const isSendChain = (value: Doc | doc.builders.DocCommand): boolean => {
   );
 };
 
+type SendOrCSend = nodes.Send & nodes.CSend;
+
+export const isSendOrCSend = (node: any): node is SendOrCSend => {
+  return isSend(node) || isCSend(node);
+};
+
 export const isSendLike = (node: any): boolean => {
-  return (
-    isSend(node) ||
-    isCSend(node) ||
-    (isBlock(node) && (isSend(node.call) || isCSend(node.call)))
-  );
+  return isSendOrCSend(node) || (isBlock(node) && isSendOrCSend(node.call));
 };
 
 export const hasBlock = (path: AstPath<nodes.Send | nodes.CSend>): boolean => {

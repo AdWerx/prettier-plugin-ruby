@@ -8,11 +8,10 @@ import {
   isArray,
   isBegin,
   isBlock,
-  isCSend,
   isHash,
   isKwargs,
   isLvar,
-  isSend,
+  isSendOrCSend,
   locationIsImmediatelyFollowedByNewline,
   willBreakExcludingHeredocs,
 } from "../queries";
@@ -79,7 +78,7 @@ const printSendLinear: NodePrinter<nodes.Send> = (path, options, print) => {
     if (!node) {
       return "";
     }
-    if (isSend(node) || isCSend(node)) {
+    if (isSendOrCSend(node)) {
       const sendPath = path as AstPath<nodes.Send>;
       members.unshift({
         node,
@@ -88,7 +87,7 @@ const printSendLinear: NodePrinter<nodes.Send> = (path, options, print) => {
         expandedArgs: printExpandedArgs(sendPath, options, print),
       });
       sendPath.call(visit, "recv");
-    } else if (isBlock(node) && (isSend(node.call) || isCSend(node.call))) {
+    } else if (isBlock(node) && isSendOrCSend(node.call)) {
       const blockPath = path as AstPath<BlockWithSend>;
       members.unshift({
         node,
@@ -190,8 +189,7 @@ const printSendLinear: NodePrinter<nodes.Send> = (path, options, print) => {
           options,
           firstNode.expression_l
         ) &&
-        ((isSend(firstNode) && isShort(firstNode.method_name)) ||
-          (isCSend(firstNode) && isShort(firstNode.method_name)) ||
+        ((isSendOrCSend(firstNode) && isShort(firstNode.method_name)) ||
           (isLvar(firstNode) && isShort(firstNode.name)) ||
           isArray(firstNode) ||
           isHash(firstNode) ||

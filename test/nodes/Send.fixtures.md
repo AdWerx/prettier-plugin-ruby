@@ -1268,3 +1268,33 @@ class Thing
   end
 end
 ```
+
+## Ex4
+
+Before:
+
+```ruby
+open_houses_payload = batch.flat_map do |item|
+  next unless item.record.persisted?
+
+  item.payload[:open_houses]&.map do |open_house|
+    open_house[:partner_listing_id] = item.record.id
+    open_house
+  end
+end.compact
+```
+
+After:
+
+```ruby
+open_houses_payload = batch
+  .flat_map do |item|
+    next unless item.record.persisted?
+
+    item.payload[:open_houses]&.map do |open_house|
+      open_house[:partner_listing_id] = item.record.id
+      open_house
+    end
+  end
+  .compact
+```
