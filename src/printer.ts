@@ -39,7 +39,7 @@ export const printer: Printer<ParserResult | Node | CommentWithValue | null> = {
     let node = path.getValue();
     if (!node) return "";
     if (node instanceof ParserResult) {
-      return path.call(print, "ast");
+      return [path.call(print, "ast"), b.hardline];
     } else if (node instanceof Loc) {
       return sourceFromLocation(options, node);
     }

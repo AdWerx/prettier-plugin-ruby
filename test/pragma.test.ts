@@ -14,7 +14,7 @@ describe("pragma", () => {
           @name = name
         end
       end
-  `;
+`;
         const formatted = prettier.format(source, {
           ...formatOptions,
           requirePragma: true,
@@ -26,7 +26,8 @@ class Thing
   def initialize(name)
     @name = name
   end
-end`);
+end
+`);
       });
     });
     describe("and pragma is missing", () => {
@@ -38,7 +39,7 @@ end`);
           @name = name
         end
       end
-  `;
+`;
         const formatted = prettier.format(source, {
           ...formatOptions,
           requirePragma: true,
@@ -52,13 +53,14 @@ end`);
     describe("insertPragma: true", () => {
       test("adds the pragma", () => {
         const source = `# frozen_string_literal: true
+
     class Thing
         attr_reader :name
           def initialize name
             @name = name
           end
         end
-    `;
+`;
         const formatted = prettier.format(source, {
           ...formatOptions,
           insertPragma: true,
@@ -70,7 +72,8 @@ class Thing
   def initialize(name)
     @name = name
   end
-end`);
+end
+`);
       });
     });
   });
