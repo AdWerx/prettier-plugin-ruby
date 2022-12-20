@@ -91,3 +91,73 @@ After:
 ```ruby
 :"Something\u{1F64B}"
 ```
+
+## Doesn't mangle a symbol starting with a colon
+
+Before:
+
+```ruby
+%s{:tricky}
+```
+
+After:
+
+```ruby
+:":tricky"
+```
+
+## Doesn't quote a symbol that does not need quoting (:FNAME)
+
+Before:
+
+```ruby
+array.try(:[], 1)
+```
+
+After:
+
+```ruby
+array.try(:[], 1)
+```
+
+## Doesn't quote a symbol that does not need quoting (:@IDENTIFIER)
+
+Before:
+
+```ruby
+object.instance_variable_set(:@help, 1)
+```
+
+After:
+
+```ruby
+object.instance_variable_set(:@help, 1)
+```
+
+## Doesn't quote a symbol that does not need quoting (:GLOBAL)
+
+Before:
+
+```ruby
+stub_global(:$testing, false)
+```
+
+After:
+
+```ruby
+stub_global(:$testing, false)
+```
+
+## Doesn't quote a symbol that does not need quoting (:FNAME)
+
+Before:
+
+```ruby
+1.send(:&, 2)
+```
+
+After:
+
+```ruby
+1.send(:&, 2)
+```
