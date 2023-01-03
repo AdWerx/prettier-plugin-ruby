@@ -7,7 +7,8 @@
     "format": "npm run build && prettier --plugin ./build",
     "watch": "tsc --watch",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "preversion": "npm run build && npm run test"
   },
   "dependencies": {
     "@adwerx/lib-ruby-parser-wasm-bindings": "^0.1.0"
