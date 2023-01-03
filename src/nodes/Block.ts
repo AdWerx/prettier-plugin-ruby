@@ -2,7 +2,7 @@ import { Node, nodes } from "@adwerx/lib-ruby-parser-wasm-bindings";
 import { AstPath, Doc, doc } from "prettier";
 import { RubyParserOptions } from "../parser";
 import { NodePrinter } from "../printer";
-import { isSend, blockShouldBreak, isCSend } from "../queries";
+import { isSend, blockShouldBreak, isCSend, isSendOrCSend } from "../queries";
 const { builders: b } = doc;
 
 const makeBlockPrinter = ({
@@ -14,7 +14,7 @@ const makeBlockPrinter = ({
   return (path, options, print) => {
     const node = path.getValue();
 
-    if ((isSend(node.call) || isCSend(node.call)) && delegateToSendCall) {
+    if (isSendOrCSend(node.call) && delegateToSendCall) {
       return path.call(print, "call");
     }
     const { open, args, body, end } = getBlockDocs(path, options, print);
@@ -50,7 +50,6 @@ export const getBlockDocs = (
   let body: Doc = "";
   const open = b.ifBreak("do", "{");
   const end = b.ifBreak("end", "}");
-
   const args = path.call(print, "args");
 
   if (node.body) {

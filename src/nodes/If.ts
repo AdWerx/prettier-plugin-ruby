@@ -1,7 +1,8 @@
 import { Loc, Node, nodes } from "@adwerx/lib-ruby-parser-wasm-bindings";
 import { Doc, doc } from "prettier";
 import { sourceFromLocation } from "../diagnostics";
-import { NodePrinter } from "../printer";
+import { NodePrinter, NodeWithComments } from "../printer";
+import { isIf } from "../queries";
 const { builders: b } = doc;
 
 export interface GenericIf {
@@ -11,7 +12,9 @@ export interface GenericIf {
   keyword_l?: Loc;
 }
 
-export const makePrintIf: (line: Doc) => NodePrinter<GenericIf> =
+export const makePrintIf: (
+  line: Doc
+) => NodePrinter<GenericIf & NodeWithComments> =
   (line) => (path, options, print) => {
     const node = path.getValue();
     const parts: Doc[] = [];
@@ -49,12 +52,13 @@ export const makePrintIf: (line: Doc) => NodePrinter<GenericIf> =
     if (primaryNode) {
       parts.push(b.indent([line, primaryBody]));
     }
-    if (secondaryNode) {
-      parts.push(
-        secondaryNode instanceof nodes.If
-          ? [line, secondaryBody]
-          : [b.line, "else", b.indent([b.line, secondaryBody])]
-      );
+    if (
+      isIf(secondaryNode) &&
+      sourceFromLocation(options, secondaryNode.keyword_l) === "elsif"
+    ) {
+      parts.push([line, secondaryBody]);
+    } else if (secondaryNode) {
+      parts.push([b.line, "else", b.indent([b.line, secondaryBody])]);
     }
     if (keyword == "if" || keyword == "unless") {
       // only add an "end" if we're the outermost if/unless

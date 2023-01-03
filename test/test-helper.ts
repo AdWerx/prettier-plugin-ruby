@@ -3,8 +3,9 @@ import path from "path";
 import prettier from "prettier";
 import { readFileSync } from "fs";
 import { marked } from "marked";
-import { name } from "../src/parser";
+import { RubyParserOptions, name } from "../src/parser";
 import * as plugin from "../src";
+import { Node } from "@adwerx/lib-ruby-parser-wasm-bindings";
 
 export type TestCase = {
   title: string;
@@ -29,35 +30,49 @@ type Token = {
   tokens?: Token[];
 };
 
-export const formatOptions: prettier.Options = {
+export const formatOptions: prettier.Options | RubyParserOptions<Node> = {
   parser: name,
   printWidth: 80,
+  eofNewline: false,
   plugins: [plugin],
 };
 
-export const runNodeFixtureTests = (name: string) => {
+const loadFixturesAndRunTests = (name: string, { from }: { from: string }) => {
   describe(`${name} fixtures`, () => {
-    test.each(
-      loadFixtures(path.resolve(__dirname, `./nodes/${name}.fixtures.md`))
-    )("$title", ({ before, after, options }) => {
-      const formatted = prettier.format(before, {
-        ...formatOptions,
-        ...options,
-      });
-      expect(formatted).toBe(after);
-      const formattedAgain = prettier.format(formatted, {
-        ...formatOptions,
-        ...options,
-      });
-      try {
-        expect(formattedAgain).toBe(formatted);
-      } catch (e) {
-        (e as Error).message =
-          (e as Error).message +
-          "\n\n‼️failed to produce same output after second formatting pass";
-        throw e;
+    test.each(loadFixtures(path.join(from, `${name}.fixtures.md`)))(
+      "$title",
+      ({ before, after, options }) => {
+        const formatted = prettier.format(before, {
+          ...formatOptions,
+          ...options,
+        });
+        expect(formatted).toEqual(after);
+        const formattedAgain = prettier.format(formatted, {
+          ...formatOptions,
+          ...options,
+        });
+        try {
+          expect(formattedAgain).toEqual(formatted);
+        } catch (e) {
+          (e as Error).message =
+            (e as Error).message +
+            "\n\n‼️failed to produce same output after second formatting pass";
+          throw e;
+        }
       }
-    });
+    );
+  });
+};
+
+export const runFixtureTests = (testPath: string) => {
+  loadFixturesAndRunTests(path.basename(testPath, ".test.ts"), {
+    from: path.dirname(testPath),
+  });
+};
+
+export const runNodeFixtureTests = (name: string) => {
+  loadFixturesAndRunTests(name, {
+    from: path.resolve(__dirname, "./nodes"),
   });
 };
 

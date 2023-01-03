@@ -215,3 +215,51 @@ else
   "false"
 end
 ```
+
+## With a nested if inside the else
+
+Before:
+
+```ruby
+if ld.present?
+  do_something
+else
+  if get(:status) == "Active" or "Pending"
+    do_something_else
+  end
+end
+```
+
+After:
+
+```ruby
+if ld.present?
+  do_something
+else
+  if get(:status) == "Active" or "Pending"
+    do_something_else
+  end
+end
+```
+
+## With a nested if inside the else
+
+Before:
+
+```ruby
+if ld.present?
+  do_something
+elsif get(:status) == "Active" or "Pending"
+  do_something_else
+end
+```
+
+After:
+
+```ruby
+if ld.present?
+  do_something
+elsif get(:status) == "Active" or "Pending"
+  do_something_else
+end
+```

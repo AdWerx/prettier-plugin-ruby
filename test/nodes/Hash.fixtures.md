@@ -126,3 +126,17 @@ After:
   long_key_name: "value"
 }
 ```
+
+## When beg/end is implicit, does not add brackets
+
+Before:
+
+```ruby
+Trip.left_joins([purchase_order: :account])
+```
+
+After:
+
+```ruby
+Trip.left_joins([purchase_order: :account])
+```

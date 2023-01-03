@@ -31,6 +31,7 @@ export const isBegin: NodeQuery<nodes.Begin> = makeQuery(nodes.Begin);
 export const isConst: NodeQuery<nodes.Const> = makeQuery(nodes.Const);
 export const isLvar: NodeQuery<nodes.Lvar> = makeQuery(nodes.Lvar);
 export const isIf: NodeQuery<nodes.If> = makeQuery(nodes.If);
+export const isIfMod: NodeQuery<nodes.IfMod> = makeQuery(nodes.IfMod);
 export const isAnd: NodeQuery<nodes.And> = makeQuery(nodes.And);
 export const isOr: NodeQuery<nodes.Or> = makeQuery(nodes.Or);
 export const isDef: NodeQuery<nodes.Def> = makeQuery(nodes.Def);
@@ -42,6 +43,9 @@ export const isRegexp: NodeQuery<nodes.Regexp> = makeQuery(nodes.Regexp);
 export const isRegOpt: NodeQuery<nodes.RegOpt> = makeQuery(nodes.RegOpt);
 export const isHeredoc: NodeQuery<nodes.Heredoc> = makeQuery(nodes.Heredoc);
 export const isXHeredoc: NodeQuery<nodes.XHeredoc> = makeQuery(nodes.XHeredoc);
+export const isReturn: NodeQuery<nodes.Return> = makeQuery(nodes.Return);
+export const isNext: NodeQuery<nodes.Next> = makeQuery(nodes.Next);
+export const isBreak: NodeQuery<nodes.Break> = makeQuery(nodes.Break);
 export const isEmptyElse: NodeQuery<nodes.EmptyElse> = makeQuery(
   nodes.EmptyElse
 );

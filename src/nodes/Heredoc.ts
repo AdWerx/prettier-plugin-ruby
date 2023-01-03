@@ -9,18 +9,19 @@ const printHeredoc: NodePrinter<nodes.Heredoc> = (path, options, print) => {
   const node = path.getValue();
   const opener = sourceFromLocation(options, node.expression_l);
   const body_l = node.heredoc_body_l;
-  let { begin } = body_l;
-  const { end } = node.heredoc_end_l;
+  const end_l = node.heredoc_end_l;
+  let { begin: bodyBegin } = body_l;
+  const { end: endEnd } = end_l;
 
   // the parser cumulatively includes overlapping heredoc bodies
   // so we keep track of which ones have already been printed and remove that
   // content from this heredoc and print the rest
   for (const loc of printedHeredocEndLocations) {
-    if (loc.end > body_l.begin && loc.end < body_l.end) {
-      begin = Math.max(begin, loc.end + 1);
+    if (loc.end > bodyBegin && loc.end < body_l.end) {
+      bodyBegin = Math.max(bodyBegin, loc.end + 1);
     }
   }
-  const body = sourceFromLocation(options, { begin, end });
+  const body = sourceFromLocation(options, { begin: bodyBegin, end: endEnd });
   let trailer: Doc = "";
 
   printedHeredocEndLocations.push(node.heredoc_end_l);

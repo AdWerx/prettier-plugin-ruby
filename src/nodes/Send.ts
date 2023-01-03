@@ -3,15 +3,16 @@ import { AstPath, Doc, doc } from "prettier";
 import { PossiblyLocatedNode } from "../parser";
 import { NodePrinter } from "../printer";
 import {
-  canBreak,
   hasBlock,
   isArray,
   isBegin,
   isBlock,
   isHash,
+  isHeredoc,
   isKwargs,
   isLvar,
   isSendOrCSend,
+  isXHeredoc,
   locationIsImmediatelyFollowedByNewline,
   willBreakExcludingHeredocs,
 } from "../queries";
@@ -19,7 +20,7 @@ import { getBlockDocs, printBlockWithoutCall } from "./Block";
 const { builders: b } = doc;
 
 const unaryOperators = ["~", "-@", "+@"];
-const operatorMethods = [
+export const operatorMethods = [
   "&",
   "|",
   "^",
@@ -89,14 +90,27 @@ const printSendLinear: NodePrinter<nodes.Send> = (path, options, print) => {
       sendPath.call(visit, "recv");
     } else if (isBlock(node) && isSendOrCSend(node.call)) {
       const blockPath = path as AstPath<BlockWithSend>;
+      const blockId = Symbol("block");
       members.unshift({
         node,
         printed: [
           blockPath.call(print, "call", "dot_l"),
           node.call.method_name,
-          blockPath.call((p) => printArgs(p, options, print), "call"),
+          // if a block is inlined the args _must_ be wrapped
+          b.ifBreak(
+            blockPath.call((p) => printArgs(p, options, print), "call"),
+            blockPath.call(
+              (p) => printArgsAlwaysWrapped(p, options, print),
+              "call"
+            ),
+            { groupId: blockId }
+          ),
+
           " ",
-          b.group(printBlockWithoutCall(blockPath, options, print)),
+          b.group(printBlockWithoutCall(blockPath, options, print), {
+            id: blockId,
+            // shouldBreak: blockShouldBreak(blockPath, options),
+          }),
         ],
       });
       blockPath.call(visit, "call", "recv");
@@ -109,26 +123,46 @@ const printSendLinear: NodePrinter<nodes.Send> = (path, options, print) => {
   };
 
   let block: Doc = "";
+  const blockId = Symbol("block");
   let expandedBlock: Doc = "";
+  const printedArgs = printArgs(path, options, print);
 
   if (hasBlock(path)) {
     let { open, args, body, end } = path.callParent((p) =>
       getBlockDocs(p as unknown as AstPath<nodes.Block>, options, print)
     );
-    block = b.group([" ", open, args ? [" ", args] : "", body, end]);
+    block = b.group([" ", open, args ? [" ", args] : "", body, end], {
+      // shouldBreak: path.callParent((p) =>
+      //   blockShouldBreak(p as unknown as AstPath<nodes.Block>, options)
+      // ),
+      id: blockId,
+    });
     expandedBlock = b.group([" ", open, args ? [" ", args] : "", body, end], {
       shouldBreak: true,
+      id: blockId,
     });
   }
 
-  // Print non-chaining sends or linearize the send chain into an array.
-  // All chains are made up of Send nodes, but not all Send nodes are chainable
-  // for the simpler types of sends (===, !, unary, etc) we can just return the
-  // printed form here
-  if (!node.recv) {
-    // simple method call with implicit receiver
-    return [printableMethodName, printArgs(path, options, print), block];
-  } else if (methodName === negation) {
+  const printMember = (member: Member): Doc => [
+    member.printed,
+    member.args || "",
+    member.block || "",
+  ];
+
+  const last: Member = {
+    node,
+    printed: [path.call(print, "dot_l"), printableMethodName],
+    args: block
+      ? b.ifBreak(printedArgs, printArgsAlwaysWrapped(path, options, print), {
+          groupId: blockId,
+        })
+      : printedArgs,
+    expandedArgs: printExpandedArgs(path, options, print),
+    block,
+    expandedBlock,
+  };
+
+  if (methodName === negation) {
     // !{something}
     return [negation, path.call(print, "recv")];
   } else if (methodName === exponentiation) {
@@ -144,23 +178,11 @@ const printSendLinear: NodePrinter<nodes.Send> = (path, options, print) => {
   } else if (operatorMethods.includes(methodName) && selector) {
     // method like >=
     // the >= should be grouped to its receiver
-    return [
-      path.call(print, "recv"),
-      " ",
-      printableMethodName,
-      printArgs(path, options, print),
-    ];
+    return [path.call(print, "recv"), " ", printableMethodName, printedArgs];
   }
 
   // last method call in the chain or a recv+dot+send by itself (no chain)
-  members.unshift({
-    node,
-    printed: [path.call(print, "dot_l"), printableMethodName],
-    args: printArgs(path, options, print),
-    expandedArgs: printExpandedArgs(path, options, print),
-    block,
-    expandedBlock,
-  });
+  members.unshift(last);
 
   if (node.recv) {
     // recursively prepend to the chain
@@ -174,12 +196,6 @@ const printSendLinear: NodePrinter<nodes.Send> = (path, options, print) => {
       b.group([b.hardline, b.join(b.hardline, members.map(printMember))])
     );
   };
-
-  const printMember = (member: Member): Doc => [
-    member.printed,
-    member.args || "",
-    member.block || "",
-  ];
 
   const firstMemberIsMagnetic = (members: Member[]): boolean => {
     if (members.length >= 1) {
@@ -206,10 +222,14 @@ const printSendLinear: NodePrinter<nodes.Send> = (path, options, print) => {
   const bigBlockCount = members.filter(
     ({ node }) => isBlock(node) && node.body && isBegin(node.body)
   ).length;
+  const heredocArgCount = members.filter(
+    ({ node }) =>
+      isSendOrCSend(node) &&
+      (node.args || []).some((node) => isHeredoc(node) || isXHeredoc(node))
+  ).length;
   const keepFirstTwoMembersJoined =
     members.length >= 2 && firstMemberIsMagnetic(members);
-  const printedGroups = members.map(printMember);
-  const oneLine = printedGroups;
+  const oneLine = members.map(printMember);
 
   // if (members.length < 2) {
   //   return b.group(oneLine);
@@ -259,7 +279,7 @@ const printSendLinear: NodePrinter<nodes.Send> = (path, options, print) => {
   let finalDoc: Doc;
   // conditions in which we prevent oneline printing altogether
   // - the chain has one or more blocks with multiple statements
-  if (bigBlockCount >= 1) {
+  if (bigBlockCount >= 1 || heredocArgCount > 1) {
     finalDoc = b.group(fullyExpanded);
   } else {
     // try oneline, if it breaks, break the parent and try again,
@@ -274,9 +294,9 @@ const printSendLinear: NodePrinter<nodes.Send> = (path, options, print) => {
 };
 
 const makeArgPrinter =
-  (
-    { shouldBreak } = { shouldBreak: false }
-  ): NodePrinter<nodes.Send | nodes.CSend> =>
+  ({ shouldBreak = false, alwaysWrap = false } = {}): NodePrinter<
+    nodes.Send | nodes.CSend | nodes.Yield
+  > =>
   (path, options, print) => {
     const node = path.getValue();
     const { args } = node;
@@ -287,11 +307,13 @@ const makeArgPrinter =
 
     const argBegin = path.call(print, "begin_l");
     const argEnd = path.call(print, "end_l");
+    const defaultOpenChar = alwaysWrap ? "(" : " ";
+    const defaultCloseChar = alwaysWrap ? ")" : "";
     const printedArgs = path.map(print, "args");
 
     if (!argBegin && args.length == 1 && !isKwargs(args[0])) {
       // no parens, one arg, we want the arg to start on the same line
-      return [" ", ...printedArgs];
+      return [defaultOpenChar, ...printedArgs, defaultCloseChar];
     } else if (
       !argBegin &&
       args.length == 2 &&
@@ -302,22 +324,29 @@ const makeArgPrinter =
       // scope :active, -> do
       //   where()
       // end
-      return [" ", printedArgs[0], ", ", printedArgs[1]];
+      return [
+        defaultOpenChar,
+        printedArgs[0],
+        ", ",
+        printedArgs[1],
+        defaultCloseChar,
+      ];
     } else {
       // other
       return b.group(
         [
-          b.ifBreak("(", argBegin || " "),
+          b.ifBreak("(", argBegin || defaultOpenChar),
           b.indent([b.softline, b.join([",", b.line], printedArgs)]),
           b.softline,
-          b.ifBreak(")", argEnd),
+          b.ifBreak(")", argEnd || defaultCloseChar),
         ],
         { shouldBreak }
       );
     }
   };
 
-const printArgs = makeArgPrinter();
-const printExpandedArgs = makeArgPrinter({ shouldBreak: true });
+export const printArgs = makeArgPrinter();
+export const printArgsAlwaysWrapped = makeArgPrinter({ alwaysWrap: true });
+export const printExpandedArgs = makeArgPrinter({ shouldBreak: true });
 
 export default printSendLinear;

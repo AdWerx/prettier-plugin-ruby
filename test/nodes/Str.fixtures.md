@@ -35,7 +35,7 @@ After:
 "this is a string".chomp
 ```
 
-## Preserves escaping
+## Preserves escaped unicode
 
 Before:
 

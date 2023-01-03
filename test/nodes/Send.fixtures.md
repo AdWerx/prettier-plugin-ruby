@@ -1298,3 +1298,25 @@ open_houses_payload = batch
   end
   .compact
 ```
+
+## :: sends
+
+Before:
+
+```ruby
+module Things
+  module Types
+    include Dry::Types()
+  end
+end
+```
+
+After:
+
+```ruby
+module Things
+  module Types
+    include Dry.Types
+  end
+end
+```

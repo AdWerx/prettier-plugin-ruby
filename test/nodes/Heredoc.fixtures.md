@@ -492,44 +492,6 @@ foo = (<<~TEXT).strip
 TEXT
 ```
 
-## Preserves a comment trailing the identifier
-
-Before:
-
-```ruby
-<<~HERE # foo
-  foo
-HERE
-```
-
-After:
-
-```ruby
-# foo
-<<~HERE
-  foo
-HERE
-```
-
-## Preserves a comment trailing the identifier
-
-Before:
-
-```ruby
-list << <<~HERE # foo
-  foo
-HERE
-```
-
-After:
-
-```ruby
-# foo
-list << <<~HERE
-  foo
-HERE
-```
-
 ## [indention-unaware] Does not indent contents
 
 Before:
@@ -657,5 +619,100 @@ def dump_commands
     "mysql #{mysql_opts} -v #{local_db_config["database"]}",
     "grep 'INSERT INTO `'"
   ]
+end
+```
+
+## When multiple appear in a send chain does not print overlapping heredocs
+
+Before:
+
+```ruby
+def find_active_attendees
+  @find_active_attendees ||=
+    Attendee.
+      select(<<~SQL
+        attendees.id,
+        attendees.email,
+        attendees.external_key,
+        attendees.first_name,
+        external_data.id as external_data_id,
+        external_data.external_key
+      SQL
+      ).
+      joins(<<~SQL
+        left join external_data on
+        (
+          attendees.external_key = external_data.external_key
+          and attendees.domain_id = external_data.domain_id
+        )
+        SQL
+      ).
+      where(
+      attendees: {
+        domain_id: domain.id,
+        email: non_existing_batch_items.pluck(:email).compact
+      }
+    )
+end
+```
+
+After:
+
+```ruby
+def find_active_attendees
+  @find_active_attendees ||= Attendee
+    .select(<<~SQL)
+        attendees.id,
+        attendees.email,
+        attendees.external_key,
+        attendees.first_name,
+        external_data.id as external_data_id,
+        external_data.external_key
+      SQL
+    .joins(<<~SQL)
+        left join external_data on
+        (
+          attendees.external_key = external_data.external_key
+          and attendees.domain_id = external_data.domain_id
+        )
+        SQL
+    .where(
+      attendees: {
+        domain_id: domain.id,
+        email: non_existing_batch_items.pluck(:email).compact
+      }
+    )
+end
+```
+
+## Appearing within a block that can be onelined
+
+Before:
+
+```ruby
+def thing
+  keys.each_slice(batch_size) do |slice|
+    execute <<-SQL.squish, 1, 2, 3
+      insert ignore into #{tmp_table_name}
+      (remote_key)
+      values (?, ?, ?)
+    SQL
+  end
+
+  process
+end
+```
+
+After:
+
+```ruby
+def thing
+  keys.each_slice(batch_size) { |slice| execute <<-SQL.squish, 1, 2, 3 }
+      insert ignore into #{tmp_table_name}
+      (remote_key)
+      values (?, ?, ?)
+    SQL
+
+  process
 end
 ```

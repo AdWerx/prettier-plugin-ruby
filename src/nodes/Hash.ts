@@ -7,18 +7,21 @@ const { builders: b } = doc;
 
 const printHash: NodePrinter<nodes.Hash> = (path, options, print) => {
   const node = path.getValue();
-  const parent = path.getParentNode();
-
+  const beg = path.call(print, "begin_l");
+  const end = path.call(print, "end_l");
   return b.group(
     [
-      "{",
+      beg,
       node.pairs.length
         ? [
-            b.indent([b.line, b.join([",", b.line], path.map(print, "pairs"))]),
-            b.line,
+            b.indent([
+              beg ? b.line : "",
+              b.join([",", b.line], path.map(print, "pairs")),
+            ]),
+            end ? b.line : "",
           ]
         : "",
-      "}",
+      end,
     ],
     { shouldBreak: primitiveShouldBreak(path, options) }
   );

@@ -1,9 +1,17 @@
 import { nodes } from "@adwerx/lib-ruby-parser-wasm-bindings";
-import { Doc, doc } from "prettier";
+import { Doc, doc, util } from "prettier";
 import { sourceFromLocation } from "../diagnostics";
 import { LocatedNode, PossiblyLocatedNode } from "../parser";
 import { NodePrinter } from "../printer";
-import { beginShouldBreak } from "../queries";
+import {
+  beginShouldBreak,
+  isBreak,
+  isHeredoc,
+  isIfMod,
+  isNext,
+  isReturn,
+  isXHeredoc,
+} from "../queries";
 const { builders: b } = doc;
 
 const printBegin: NodePrinter<nodes.Begin> = (path, options, print) => {
@@ -25,14 +33,35 @@ const printBegin: NodePrinter<nodes.Begin> = (path, options, print) => {
 
   const statements = path.map((path, i, value) => {
     const snode = path.getValue() as LocatedNode;
+    const nextNode = value[i + 1];
     let trailer: Doc[] = [];
-    if (snode.expression_l && i !== value.length - 1) {
+    if (snode.expression_l && nextNode) {
+      // regardless of whether expressions were joined with `;`,
+      // we're going to join them with lines
       trailer.push(b.hardline);
-      const trailingCharacters = sourceFromLocation(options, {
-        begin: snode.expression_l.end,
-        end: snode.expression_l.end + 2,
-      });
-      if (trailingCharacters[1] === "\n") {
+      if (
+        isIfMod(snode) &&
+        (isReturn(snode.if_false) ||
+          isReturn(snode.if_true) ||
+          isNext(snode.if_false) ||
+          isNext(snode.if_true) ||
+          isBreak(snode.if_false) ||
+          isBreak(snode.if_true))
+      ) {
+        // guard clauses always get a newline after them
+        trailer.push(b.hardline);
+      } else if (
+        // the heredoc ending token includes a newline so we don't need to add one
+        !isHeredoc(snode) &&
+        !isXHeredoc(snode) &&
+        util.hasNewlineInRange(
+          options.originalText,
+          snode.expression_l.end + 1,
+          nextNode.expression_l.begin
+        )
+      ) {
+        // if theres a newline between the expression+1 and the begin of
+        // the next expression, we'll add an additional hardline
         trailer.push(b.hardline);
       }
     }

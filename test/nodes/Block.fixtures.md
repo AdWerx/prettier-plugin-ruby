@@ -134,3 +134,90 @@ class Thing
   end
 end
 ```
+
+## When consolidated into one line, always wraps the args
+
+Before:
+
+```ruby
+array :sequenced_ids do
+  integer
+end
+```
+
+After:
+
+```ruby
+array(:sequenced_ids) { integer }
+```
+
+## When appearing in chains preserves the multiline formatting
+
+Before:
+
+```ruby
+self.find :things do
+  where(1)
+end.filter :apply do
+  limit(1)
+end
+```
+
+After:
+
+```ruby
+self.find(:things) { where(1) }.filter(:apply) { limit(1) }
+```
+
+## When consolidated into one line, always wraps the args #3
+
+Before:
+
+```ruby
+self.find [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], many: :thing, in: :order, another: :option, and_something: :else do
+  where(1).and(2).without(3).coalesce(4).take(5).leaving(6).behind(7)
+end
+```
+
+After:
+
+```ruby
+self
+  .find(
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    many: :thing,
+    in: :order,
+    another: :option,
+    and_something: :else
+  ) { where(1).and(2).without(3).coalesce(4).take(5).leaving(6).behind(7) }
+```
+
+## Formats destructured args
+
+Before:
+
+```ruby
+grouped_payloads.map do |(type, payloads)|
+  typed_feed = feed.becomes(FEED_TYPE_MAP.fetch(type))
+  typed_batch = batch_for(feed: typed_feed, incoming: payloads)
+  typed_feed.batch_importer.new(typed_feed, typed_batch, audit).run
+rescue StandardError => e
+  ReportError.run(e, feed: feed, audit: audit)
+  typed_batch.result.failed += payloads.size
+  batch
+end
+```
+
+After:
+
+```ruby
+grouped_payloads.map do |(type, payloads)|
+  typed_feed = feed.becomes(FEED_TYPE_MAP.fetch(type))
+  typed_batch = batch_for(feed: typed_feed, incoming: payloads)
+  typed_feed.batch_importer.new(typed_feed, typed_batch, audit).run
+rescue StandardError => e
+  ReportError.run(e, feed: feed, audit: audit)
+  typed_batch.result.failed += payloads.size
+  batch
+end
+```

@@ -1,6 +1,7 @@
 import { nodes } from "@adwerx/lib-ruby-parser-wasm-bindings";
-import { doc } from "prettier";
+import { doc, util } from "prettier";
 import { NodePrinter, NodeWithComments } from "../printer";
+import { sourceFromLocation } from "../diagnostics";
 const { builders: b } = doc;
 
 const printDef: NodePrinter<nodes.Def & NodeWithComments> = (
@@ -9,14 +10,21 @@ const printDef: NodePrinter<nodes.Def & NodeWithComments> = (
   print
 ) => {
   const node = path.getValue();
-  const body = path.call(print, "body");
+  let body = path.call(print, "body");
   const args = path.call(print, "args");
   const preamble = ["def ", node.name, args];
-  const hasContents =
-    node.body ||
-    node.comments?.some(
-      (c) => !c.leading && !c.trailing && c.placement == "ownLine"
+  const bodyComments = node.comments?.filter(
+    (c) => !c.leading && !c.trailing && c.placement == "ownLine"
+  );
+  if (!node.body && bodyComments?.length) {
+    body = b.join(
+      b.hardline,
+      bodyComments.map((comment) => {
+        comment.printed = true;
+        return sourceFromLocation(options, comment.loc).trim();
+      })
     );
+  }
 
   if (node.assignment_l) {
     // endless method def
@@ -24,7 +32,7 @@ const printDef: NodePrinter<nodes.Def & NodeWithComments> = (
   } else {
     return b.group([
       ...preamble,
-      hasContents ? b.indent([b.hardline, body]) : b.ifBreak("", ";"),
+      body ? b.indent([b.hardline, body]) : b.ifBreak("", ";"),
       b.line,
       "end",
     ]);

@@ -3,14 +3,12 @@ import {
   Comment,
   MagicComment,
   Loc,
-  CommentKind,
   Node,
   ParserResult,
 } from "@adwerx/lib-ruby-parser-wasm-bindings";
-import { TextDecoder } from "util";
 import { ParserOptions } from "prettier";
 import { printDiagnostics, sourceFromLocation } from "./diagnostics";
-import { printedHeredocEndLocations } from "./printer";
+import { AnnotatedComment, printedHeredocEndLocations } from "./printer";
 
 export const name = "ruby";
 export const astFormat = "lib-ruby-parser";
@@ -19,6 +17,7 @@ export interface RubyParserOptions<T> extends ParserOptions<T> {
   magicComments?: MagicComment[];
   formatNumbers: boolean;
   trailingDot: boolean;
+  eofNewline: boolean;
 }
 
 export interface LocatedNode extends Node {
@@ -27,36 +26,21 @@ export interface LocatedNode extends Node {
 
 export interface PossiblyLocatedNode extends Partial<LocatedNode> {}
 
-export class CommentWithValue extends Comment {
-  value: string;
-  placement?: string;
-  trailing?: boolean;
-  leading?: boolean;
-  encodingNode?: Node;
-  precedingNode?: Node;
-  followingNode?: Node;
-  constructor(loc: Loc, kind: CommentKind, value: string) {
-    super(loc, kind);
-    this.value = value;
-  }
-}
-
 export const parser = {
   parse(text: string, parsers: {}, options: ParserOptions<ParserResult>) {
     const result = parse(text, options.filepath || "(eval)", (_, b) => b);
-    const originalText = new TextDecoder().decode(result.input.bytes);
 
     printedHeredocEndLocations.splice(0, printedHeredocEndLocations.length);
 
     printDiagnostics(result);
 
-    result.comments = result.comments.map((comment) => {
-      return new CommentWithValue(
-        comment.loc,
-        comment.kind,
-        sourceFromLocation({ originalText }, comment.loc)
-      );
-    });
+    result.comments.forEach(
+      (comment) =>
+        ((comment as AnnotatedComment).value = sourceFromLocation(
+          { originalText: text },
+          comment.loc
+        ))
+    );
 
     if (!result.ast) throw new Error("Failed to parse AST");
 

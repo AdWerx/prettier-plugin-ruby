@@ -4,11 +4,27 @@ import {
   Loc,
   ParserResult,
   Comment,
+  MagicComment,
 } from "@adwerx/lib-ruby-parser-wasm-bindings";
-import { Printer, Doc, AstPath, util } from "prettier";
+import { Printer, Doc, doc, AstPath, util } from "prettier";
+const { builders: b } = doc;
 import { sourceFromLocation } from "./diagnostics";
-import { CommentWithValue, RubyParserOptions } from "./parser";
-import { isHeredoc, isSend } from "./queries";
+import { RubyParserOptions } from "./parser";
+import { isHeredoc, isIf, isSend } from "./queries";
+
+export class AnnotatedComment extends Comment {
+  placement?: string;
+  trailing?: boolean;
+  leading?: boolean;
+  encodingNode?: Node;
+  precedingNode?: Node;
+  followingNode?: Node;
+  printed?: boolean;
+  value?: string;
+}
+export interface NodeWithComments {
+  comments?: AnnotatedComment[];
+}
 
 export type NodePrinter<T> = (
   path: AstPath<T>,
@@ -33,15 +49,18 @@ export const nodePrinters: { [name: string]: NodePrinter<Node | null> } = {};
 Object.keys(nodes).forEach((name) => {
   nodePrinters[name] = require(`./nodes/${name}`).default;
 });
+nodePrinters["MagicComment"] = require("./nodes/MagicComment").default;
+nodePrinters["Comment"] = require("./nodes/Comment").default;
+nodePrinters["Loc"] = require("./nodes/Loc").default;
 
-export const printer: Printer<ParserResult | Node | CommentWithValue | null> = {
+export const printer: Printer<
+  ParserResult | Node | AnnotatedComment | MagicComment | null
+> = {
   print(path, options: RubyParserOptions<Node | null>, print) {
     let node = path.getValue();
     if (!node) return "";
     if (node instanceof ParserResult) {
-      return [path.call(print, "ast"), b.hardline];
-    } else if (node instanceof Loc) {
-      return sourceFromLocation(options, node);
+      return [path.call(print, "ast"), options.eofNewline ? b.hardline : ""];
     }
 
     const type = node.constructor.name;
@@ -53,10 +72,28 @@ export const printer: Printer<ParserResult | Node | CommentWithValue | null> = {
     return printed;
   },
   printComment(path, options) {
-    const comment = path.getValue() as CommentWithValue;
-    if (comment.placement === "ownLine" || comment.placement === "remaining")
-      return comment.value.trim();
-    return comment.value;
+    const comment = path.getValue();
+    if (!(comment instanceof Comment) || !comment.value) return "";
+
+    // // detect when we are printing magic comments at the top of the file
+    const grandparent = path.getParentNode(1);
+    const comments = path.stack[path.stack.length - 3];
+    const index = path.stack[path.stack.length - 2];
+
+    // the last magic comment gets an extra newline to separate it from the body
+    if (grandparent instanceof ParserResult && /:|@/.test(comment.value)) {
+      if (
+        Array.isArray(comments) &&
+        typeof index === "number" &&
+        comments.length - 1 === index
+      )
+        return comment.value;
+    }
+
+    // // if (comment.placement === "ownLine" || comment.placement === "remaining")
+    // // return comment.value.trim();
+
+    return comment.value.trim();
   },
   isBlockComment(node) {
     return node instanceof Comment && node.kind == "document";
@@ -65,25 +102,21 @@ export const printer: Printer<ParserResult | Node | CommentWithValue | null> = {
     return node instanceof Node;
   },
   insertPragma(text: string): string {
-    return `# @format
-${text}`;
+    return `# @format\n${text}`;
   },
   handleComments: {
     remaining(comment, text, options) {
-      const { precedingNode } = comment;
-      if (
-        (isHeredoc(precedingNode) || isSend(precedingNode)) &&
-        !sourceFromLocation(
-          { originalText: text },
-          {
-            begin: precedingNode.expression_l.end,
-            end: comment.loc.begin,
-          }
-        ).includes("\n")
-      ) {
-        // comment trails a block, technically inside the block, but the comment
-        // pertains to the send. It should be moved out of the block
+      const { precedingNode, enclosingNode, followingNode } = comment;
+      if (isHeredoc(precedingNode)) {
         util.addLeadingComment(precedingNode, comment);
+        return true;
+      }
+      if (isSend(precedingNode) && precedingNode.args.some(isHeredoc)) {
+        util.addLeadingComment(precedingNode, comment);
+        return true;
+      }
+      if (!isIf(enclosingNode) && isSend(precedingNode)) {
+        util.addTrailingComment(precedingNode, comment);
         return true;
       }
       return false;
