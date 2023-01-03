@@ -1320,3 +1320,31 @@ module Things
   end
 end
 ```
+
+## Retains arguments of top-most send in a chain
+
+Before:
+
+```ruby
+@existing ||= External::Itinerary.
+  where(trip_identifier: remote_ids).
+  each_with_object({ all: [] }) do |itinerary, index|
+    presume_missing(itinerary)
+    index[:all] << itinerary
+    index[itinerary.trip_identifier] ||= {}
+    index[itinerary.trip_identifier][itinerary.external_url] = itinerary
+  end
+```
+
+After:
+
+```ruby
+@existing ||= External::Itinerary
+  .where(trip_identifier: remote_ids)
+  .each_with_object({ all: [] }) do |itinerary, index|
+    presume_missing(itinerary)
+    index[:all] << itinerary
+    index[itinerary.trip_identifier] ||= {}
+    index[itinerary.trip_identifier][itinerary.external_url] = itinerary
+  end
+```

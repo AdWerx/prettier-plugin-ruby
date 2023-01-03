@@ -152,10 +152,8 @@ const printSendLinear: NodePrinter<nodes.Send> = (path, options, print) => {
   const last: Member = {
     node,
     printed: [path.call(print, "dot_l"), printableMethodName],
-    args: block
-      ? b.ifBreak(printedArgs, printArgsAlwaysWrapped(path, options, print), {
-          groupId: blockId,
-        })
+    args: hasBlock(path)
+      ? printArgsAlwaysWrapped(path, options, print)
       : printedArgs,
     expandedArgs: printExpandedArgs(path, options, print),
     block,
