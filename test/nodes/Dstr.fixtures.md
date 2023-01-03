@@ -63,3 +63,17 @@ After:
 ```ruby
 errors.add(:name, "A trip named '#{name}' already exists.")
 ```
+
+## Preserves quotes inside of the string
+
+Before:
+
+```ruby
+errors.add(:name, "'A trip named '#{name}' already exists.'")
+```
+
+After:
+
+```ruby
+errors.add(:name, "'A trip named '#{name}' already exists.'")
+```
